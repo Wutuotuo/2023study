@@ -51,34 +51,22 @@ IDE 集成开发环境 一般包括了代码编辑，编译器，调试器。图
 ```c#
 using System;
 
-
-
 namespace test
-
 {
-
-  class Program
-
-  {
-
-​    public static void Main(string[] args)
-
-​    {
-
-​      Console.WriteLine("Hello World!");
-
-​      
-
-​      // TODO: Implement Functionality Here
-
-​      Console.Write("Press any key to continue . . . ");
-
-​      Console.ReadKey(true);
-
-​    }
-
-  }
-
+	//命名控件代码块
+	class Program
+	{
+		//类代码块
+		public static void Main(string[] args)
+		{
+			//函数代码块
+			Console.WriteLine("Hello World!");
+			
+			// TODO: Implement Functionality Here
+			Console.Write("Press any key to continue . . . ");
+			Console.ReadKey(true);
+		}
+	}
 }
 输出：
     Hello World!
@@ -89,7 +77,27 @@ namespace test
 
 ### 4.变量
 
+```
+#region Myregion
+折叠代码
+#endregion
+```
+
+变量：存储各个类型数值的一个容器，可以通过‘+’来拼接，小数默认是double类型，需要float的话加f。
+
+| 类型       | 举例                                                         |
+| ---------- | ------------------------------------------------------------ |
+| 整数类型   | sbyte（-128~127）、byte（0~255）、short（-32768~32767）、ushort（0~65535）、int（-21亿~21亿多）、uint（0~42亿）、long（-900万兆~900万兆）、ulong（0~1800万兆） 和 char（0~65535）,string (多个字符无上限) |
+| 浮点型     | float（根据编译器不同存储7/8位有效数字） 和 double（存储15~17位有效数字，抛弃的数字会四舍五入） |
+| 十进制类型 | decimal（存储27~28位有效数字，不建议使用）                   |
+| 布尔类型   | true 或 false 值，指定的值                                   |
+| 空类型     | 可为空值的数据类型                                           |
+
+C# 允许定义其他值类型的变量，比如 **enum**，也允许定义引用类型变量，比如 **class**。这些我们将在以后的章节中进行讨论。在本章节中，我们只研究基本变量类型。
+
 ### 5.变量的本质
+
+一个字节byte为8位bit
 
 ### 6.变量的命名规范
 
