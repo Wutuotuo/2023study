@@ -241,7 +241,96 @@ C# 提供了下列内置的类型转换方法：
   | 15   | **ToUInt32** 把类型转换为 32 位无符号整数类型。              |
   | 16   | **ToUInt64** 把类型转换为 64 位无符号整数类型。              |
 
+## 实例
+
+```c#
+**namespace** TypeConversionApplication
+ {
+   **class** StringConversion
+   {
+     **static** **void** Main(**string**[] args)
+     {
+       **int** i = 75;
+       **float** f = 53.005f;
+       **double** d = 2345.7652;
+       **bool** b = **true**;
+ 
+       Console.WriteLine(i.ToString());
+       Console.WriteLine(f.ToString());
+       Console.WriteLine(d.ToString());
+       Console.WriteLine(b.ToString());
+       Console.ReadKey();
+       
+     }
+   }
+ }
+```
+
+
+
 ### 10.异常捕获
+
+异常捕获可以避免代码报错造成程序卡死的情况
+
+```c#
+public static void Main(string[] args)
+
+​    {
+
+​      Console.WriteLine("异常捕获");
+
+​      try
+
+​      {
+
+​        string str = Console.ReadLine();
+
+​        int i = int.Parse(str);
+
+​        Console.WriteLine(i);
+
+​        Console.Read();
+
+​        //希望进行异常捕获的代码块
+
+​        //放到try中
+
+​        //如果try中的代码报错了不会让程序卡死
+
+​      } 
+
+​      catch (Exception e)
+
+​      {
+
+​        Console.WriteLine(e);
+
+​        Console.WriteLine("请输入合法数字");
+
+​        Console.Read();
+
+​        //e就是try里面的具体问题，可以使用e去打印问题
+
+​        //如果出错了会执行catch中的代码来捕获异常
+
+​        throw;
+
+​      }
+
+​      //可选部分
+
+​      finally
+
+​      {
+
+​        Console.WriteLine("执行完毕");
+
+​      }
+
+​      //注意异常捕获代码基本结构不需要加分号，语句块需要加分号
+```
+
+
 
 ### 11.运算符
 
