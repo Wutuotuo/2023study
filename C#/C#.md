@@ -48,6 +48,45 @@ IDE 集成开发环境 一般包括了代码编辑，编译器，调试器。图
 
 不同语句块中书写的代码规则不同
 
+```c#
+using System;
+
+
+
+namespace test
+
+{
+
+  class Program
+
+  {
+
+​    public static void Main(string[] args)
+
+​    {
+
+​      Console.WriteLine("Hello World!");
+
+​      
+
+​      // TODO: Implement Functionality Here
+
+​      Console.Write("Press any key to continue . . . ");
+
+​      Console.ReadKey(true);
+
+​    }
+
+  }
+
+}
+输出：
+    Hello World!
+    Press any key to continue . . . 
+```
+
+
+
 ### 4.变量
 
 ### 5.变量的本质
