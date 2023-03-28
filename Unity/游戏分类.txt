@@ -1,0 +1,28 @@
+射击 FPS
+赛车 RAC
+
+以下是列表
+ACT动作游戏
+A-RPG动作角色扮演游戏
+AVG冒险游戏
+A-AVG动作冒险游戏
+EDU养成类游戏
+FLY模拟飞行
+FPS第一人称视角射击游戏
+FTG格斗游戏
+MIX合成类游戏
+MMO-RPG大型多人在线角色扮演游戏
+MUD网络游戏
+MUG音乐游戏
+OTH其他类游戏
+PUZ益智类游戏
+RAC赛车类游戏
+RPG角色扮演游戏
+RTS即时战略游戏
+SIM模拟经营
+SLG策略战棋游戏
+SPG运动游戏
+S-RPG战略角色扮演游戏
+SPT体育游戏
+STG射击游戏
+TAB桌面棋类游戏 
