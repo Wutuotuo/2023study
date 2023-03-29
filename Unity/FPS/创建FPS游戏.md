@@ -1,12 +1,13 @@
 # 创建FPS游戏
+
 ## 一、[FPController] - 使用Rigidbody&Capsule Collider制作FPS角色控制器
 1.创建胶囊并把摄像机一起放到FPcontroller中
 
-![image-20230328161440778](C:\Users\13038\AppData\Roaming\Typora\typora-user-images\image-20230328161440778.png)
+![Snipaste_2023-03-29_22-39-38](../../image/Snipaste_2023-03-29_22-39-38.png)
 
 2.FPcontroller添加CapsuleCollider 、RigiBody
 
-![image-20230328161908349](C:\Users\13038\AppData\Roaming\Typora\typora-user-images\image-20230328161908349.png)
+![Snipaste_2023-03-29_22-41-28](../../image/Snipaste_2023-03-29_22-41-28.png)
 
 3.需要让鼠标移动改变摄像机的值，创建脚本FPMouseLoook
 
@@ -284,3 +285,6 @@ public class FPMove : MonoBehaviour
 }
 ```
 
+缺点：会吞掉一些指令
+
+## 二、使用CharacterController制作FPS角色控制器
