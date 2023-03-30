@@ -1,15 +1,16 @@
 # 创建FPS游戏
 
 ## 一、[FPController] - 使用Rigidbody&Capsule Collider制作FPS角色控制器
-1.创建胶囊并把摄像机一起放到FPcontroller中
+
+#### 1.创建胶囊并把摄像机一起放到FPcontroller中
 
 ![Snipaste_2023-03-29_22-39-38](../../image/Snipaste_2023-03-29_22-39-38.png)
 
-2.FPcontroller添加CapsuleCollider 、RigiBody
+#### 2.FPcontroller添加CapsuleCollider 、RigiBody
 
 ![Snipaste_2023-03-29_22-41-28](../../image/Snipaste_2023-03-29_22-41-28.png)
 
-3.需要让鼠标移动改变摄像机的值，创建脚本FPMouseLoook
+#### 3.需要让鼠标移动改变摄像机的值，创建脚本FPMouseLoook
 
 FPMouseLoook.cs
 
@@ -81,7 +82,7 @@ public class FPMouseLoook : MonoBehaviour
 }
 ```
 
-4.使用键盘控制移动，同时前进方向应为注视的方向
+#### 4.使用键盘控制移动，同时前进方向应为注视的方向
 
 FPMove.cs
 
@@ -157,7 +158,7 @@ public class FPMove : MonoBehaviour
 }
 ```
 
-5.添加一个平面,同时使角色只有在地面上才移动，添加跳跃，修改FPMove.cs
+#### 5.添加一个平面,同时使角色只有在地面上才移动，添加跳跃，修改FPMove.cs
 
 ```c#
 using System;
@@ -287,4 +288,87 @@ public class FPMove : MonoBehaviour
 
 缺点：会吞掉一些指令
 
-## 二、使用CharacterController制作FPS角色控制器
+## 二、[FPController] - 使用CharacterController制作FPS角色控制器
+
+####  1.添加CharacterController组件
+
+![Snipaste_2023-03-30_14-44-42](../../image/Snipaste_2023-03-30_14-44-42.png)
+
+#### 2.编辑FPControler.cs脚本
+
+FPControler.cs
+
+```c#
+using System.Collections;
+
+using System.Collections.Generic;
+
+using UnityEngine;
+
+
+
+public class FPControler : MonoBehaviour
+
+{
+
+  private Transform characterTransform;
+
+  private Vector3 movementDirection;
+
+  public float speed = 3.0f;
+
+  public float gravity  = 9.8f;
+
+  public float jumpHeight = 3.0f;
+
+  private CharacterController characterController;
+
+  private void Awake() {
+
+​    characterTransform = GetComponent<Transform>();
+
+​    characterController = GetComponent<CharacterController>();
+
+​    
+
+  }
+
+  private void Update() {
+
+  if(characterController.isGrounded)
+
+  {
+
+​    var tmp_Horizontal = Input.GetAxis("Horizontal");
+
+​    var tmp_Vertical = Input.GetAxis("Vertical");
+
+​    movementDirection = characterTransform.TransformDirection(new Vector3(tmp_Horizontal,0,tmp_Vertical));
+
+​    if(Input.GetButtonDown("Jump"))
+
+​    {
+
+​      movementDirection.y = jumpHeight;
+
+​    }
+
+  }
+
+  movementDirection.y -= gravity*Time.deltaTime;
+
+  //Move不实现重力
+
+  characterController.Move(speed*Time.deltaTime*movementDirection);  
+
+  //SimpleMove实现重力
+
+  //characterController.SimpleMove(speed*Time.deltaTime*tmp_MovementDirection);
+
+  }
+
+}
+
+
+```
+
