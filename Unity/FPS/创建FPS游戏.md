@@ -300,6 +300,53 @@ FPControler.cs
 
 ```c#
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class FPControler : MonoBehaviour
+{
+    private Transform characterTransform;
+    private Vector3 movementDirection;
+    public float speed = 3.0f;
+    public float gravity  = 9.8f;
+    public float jumpHeight = 3.0f;
+    private CharacterController characterController;
+    //获取组件
+    private void Awake() {
+        characterTransform = GetComponent<Transform>();
+        characterController = GetComponent<CharacterController>();
+        
+    }
+    private void Update() {
+    if(characterController.isGrounded)
+    {
+        var tmp_Horizontal = Input.GetAxis("Horizontal");
+        var tmp_Vertical = Input.GetAxis("Vertical");
+        //当前要移动的方向
+        movementDirection = characterTransform.TransformDirection(new Vector3(tmp_Horizontal,0,tmp_Vertical));
+        if(Input.GetButtonDown("Jump"))
+        {
+            movementDirection.y = jumpHeight;
+        }
+    }
+    movementDirection.y -= gravity*Time.deltaTime;
+    //Move不实现重力
+    characterController.Move(speed*Time.deltaTime*movementDirection);  
+    //SimpleMove实现重力
+    //characterController.SimpleMove(speed*Time.deltaTime*tmp_MovementDirection);
+    }
+}
+
+```
+
+## 三、完善FP控制器实现下蹲&静步&行走
+
+#### 1.编辑FPControler.cs脚本
+
+FPControler.cs
+
+```c#
+using System.Collections;
 
 using System.Collections.Generic;
 
@@ -317,11 +364,25 @@ public class FPControler : MonoBehaviour
 
   public float speed = 3.0f;
 
+  public float walkSpeed = 1.7f;
+
   public float gravity  = 9.8f;
 
   public float jumpHeight = 3.0f;
 
+  public float crouchHeight = 1.0f;
+
+  public float smoothTime = 5;
+
+  private float originHeight;
+
+  private bool isCrouched = false;
+
   private CharacterController characterController;
+
+
+
+  //获取组件
 
   private void Awake() {
 
@@ -329,21 +390,33 @@ public class FPControler : MonoBehaviour
 
 ​    characterController = GetComponent<CharacterController>();
 
-​    
+​    originHeight = characterController.height;
 
   }
 
+  private float tmp_CurrentSpeed = 1.7f;
+
   private void Update() {
+
+  
 
   if(characterController.isGrounded)
 
   {
 
+​    
+
+​    //在地上时可以跳跃与静步
+
 ​    var tmp_Horizontal = Input.GetAxis("Horizontal");
 
 ​    var tmp_Vertical = Input.GetAxis("Vertical");
 
+​    //当前要移动的方向
+
 ​    movementDirection = characterTransform.TransformDirection(new Vector3(tmp_Horizontal,0,tmp_Vertical));
+
+​    //跳跃
 
 ​    if(Input.GetButtonDown("Jump"))
 
@@ -353,13 +426,37 @@ public class FPControler : MonoBehaviour
 
 ​    }
 
+​    //静步 蹲下时速度都会变化
+
+​    // if(Input.GetKey(KeyCode.LeftShift))
+
+​    // {
+
+​    //   tmp_CurrentSpeed = walkSpeed;
+
+​    // }
+
+​    // else
+
+​    // {
+
+​    //   tmp_CurrentSpeed = speed;
+
+​    // }
+
+​    tmp_CurrentSpeed =  Input.GetKey(KeyCode.LeftShift)||isCrouched?walkSpeed:speed;
+
   }
+
+  //蹲下与站起
+
+  Crouch_tip();
 
   movementDirection.y -= gravity*Time.deltaTime;
 
   //Move不实现重力
 
-  characterController.Move(speed*Time.deltaTime*movementDirection);  
+  characterController.Move(tmp_CurrentSpeed * Time.deltaTime*movementDirection);  
 
   //SimpleMove实现重力
 
@@ -367,8 +464,44 @@ public class FPControler : MonoBehaviour
 
   }
 
+  private void Crouch_tip(){
+
+​    if(Input.GetKeyDown(KeyCode.LeftControl))
+
+​    {
+
+​    //协程函数，用于从2过渡到到1
+
+​    float tmp_TargetHeight = isCrouched?originHeight:crouchHeight;
+
+​    StartCoroutine(DoCrouch(tmp_TargetHeight));
+
+​    isCrouched = !isCrouched;
+
+​    }
+
+  }
+
+  private IEnumerator DoCrouch(float targetHeight){
+
+  float tmp_CurrentHeight= 0;
+
+​    while(Mathf.Abs(characterController.height - targetHeight)>0.1f)
+
+​    {
+
+​      yield return null;
+
+​      characterController.height = 
+
+​        Mathf.SmoothDamp(characterController.height,targetHeight,
+
+​          ref tmp_CurrentHeight,Time.deltaTime*smoothTime);
+
+​    }
+
+  }
+
 }
-
-
 ```
 
