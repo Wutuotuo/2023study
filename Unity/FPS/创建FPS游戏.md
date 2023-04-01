@@ -35,9 +35,9 @@ public class FPMouseLoook : MonoBehaviour
 
   private Vector3 cameraRotation;
 
-  public float mouseSensitivity;
+  public float mouseSensitivity = 5f;
 
-  public Vector2 maxInAngle;
+  public Vector2 maxInAngle = new Vector2(-65,65);
 
   private void Awake() 
 
@@ -72,15 +72,17 @@ public class FPMouseLoook : MonoBehaviour
 ​    //Quaternion.Euler返回一个旋转，它围绕 z 轴旋转 z 度、围绕 x 轴旋转 x 度、围绕 y 轴旋转 y 度（按该顺序应用）
 
 ​    cameraTransform.rotation = Quaternion.Euler(x:cameraRotation.x,y:cameraRotation.y,z:0);
-      
+​      
 //使用键盘控制移动，同时前进方向应为注视的方向
-      
+​      
 ​    characterTransform.rotation = Quaternion.Euler(x:0,y:cameraRotation.y,z:0);
 
   }
 
 }
 ```
+
+
 
 #### 4.使用键盘控制移动，同时前进方向应为注视的方向
 
@@ -499,6 +501,194 @@ public class FPControler : MonoBehaviour
 ​          ref tmp_CurrentHeight,Time.deltaTime*smoothTime);
 
 ​    }
+
+  }
+
+}
+```
+
+
+
+## 三、[FPController] - 手臂资源导入实现行走奔跑
+
+#### 1.导入素材包，应用之前的脚本
+
+POLYGON - FPS SAMPLE
+
+LowPolyFPS Pack - Free(Sample)
+
+<img src="../../image/Snipaste_2023-04-01_17-16-36.png" alt="Snipaste_2023-04-01_17-16-36"  />
+
+#### 2.构建动画，使用混合树来创建不同速度下创建的动画
+
+![Snipaste_2023-04-01_20-08-15](../../image/Snipaste_2023-04-01_20-08-15.png)
+
+#### 3.用脚本传入动画控制器中变量Velocity的值来实现控制动画
+
+FPControler.cs
+
+```c#
+using System.Collections;
+
+using System.Collections.Generic;
+
+using UnityEngine;
+
+
+
+public class FPControler : MonoBehaviour
+
+{
+  private Animator animator;
+  private Transform characterTransform;
+  private Vector3 movementDirection;
+  private CharacterController characterController;
+
+  public float speed = 3.0f;
+
+  public float walkSpeed = 1.7f;
+
+  public float gravity  = 9.8f;
+
+  public float jumpHeight = 3.0f;
+
+  public float crouchHeight = 1.0f;
+
+  public float smoothTime = 5;
+
+  private float originHeight;
+
+  private bool isCrouched = false;
+  private float velocity;
+
+
+  //获取组件
+
+  private void Awake() {
+
+	characterTransform = GetComponent<Transform>();
+
+	characterController = GetComponent<CharacterController>();
+
+	animator = GetComponentInChildren<Animator>();
+
+  }
+  private void Start() {
+    
+
+	originHeight = characterController.height;
+
+  }
+
+  private float tmp_CurrentSpeed = 1.7f;
+
+  private void Update() {
+
+  Vector3 tmp_SubXVelocity ;
+
+  if(characterController.isGrounded)
+
+  {
+
+​    
+
+	//在地上时可以跳跃与静步
+
+	var tmp_Horizontal = Input.GetAxis("Horizontal");
+
+	var tmp_Vertical = Input.GetAxis("Vertical");
+
+	//当前要移动的方向
+
+	movementDirection = characterTransform.TransformDirection(new Vector3(tmp_Horizontal,0,tmp_Vertical));
+
+	//跳跃
+
+	if(Input.GetButtonDown("Jump"))
+
+	{
+
+ 	 movementDirection.y = jumpHeight;
+
+	}
+
+	//静步 蹲下时速度都会变化
+
+	// if(Input.GetKey(KeyCode.LeftShift))
+
+	// {
+
+	//   tmp_CurrentSpeed = walkSpeed;
+
+	// }
+
+	// else
+
+	// {
+
+	//   tmp_CurrentSpeed = speed;
+
+	// }
+
+	tmp_CurrentSpeed =  Input.GetKey(KeyCode.LeftShift)||isCrouched?walkSpeed:speed;
+
+  }
+
+  //蹲下与站起
+
+  	Crouch_tip();
+
+ 	 movementDirection.y -= gravity*Time.deltaTime;
+
+  	//Move不实现重力
+
+ 	 characterController.Move(tmp_CurrentSpeed * Time.deltaTime*movementDirection);  
+ 	 tmp_SubXVelocity = characterController.velocity;
+ 	 tmp_SubXVelocity.y = 0;
+  	velocity = tmp_SubXVelocity.magnitude;
+  	animator.SetFloat("Velocity",velocity);
+
+  	//SimpleMove实现重力
+
+ 	 //characterController.SimpleMove(speed*Time.deltaTime*tmp_MovementDirection);
+
+  }
+
+  private void Crouch_tip(){
+
+	if(Input.GetKeyDown(KeyCode.LeftControl))
+
+{
+
+//协程函数，用于从2过渡到到1
+
+	float tmp_TargetHeight = isCrouched?originHeight:crouchHeight;
+
+	StartCoroutine(DoCrouch(tmp_TargetHeight));
+
+	isCrouched = !isCrouched;
+
+}
+
+  }
+
+  private IEnumerator DoCrouch(float targetHeight){
+
+  	float tmp_CurrentHeight= 0;
+
+	while(Mathf.Abs(characterController.height - targetHeight)>0.1f)
+
+	{
+
+ 	 yield return null;
+
+ 	 characterController.height = 
+
+​   	 Mathf.SmoothDamp(characterController.height,targetHeight,
+
+​      	ref tmp_CurrentHeight,Time.deltaTime*smoothTime);
+
+	}
 
   }
 
