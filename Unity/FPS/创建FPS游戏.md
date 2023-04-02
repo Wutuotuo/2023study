@@ -1,5 +1,8 @@
 # 创建FPS游戏
 
+- Unity编辑器版本2021.3.21f1c1
+- 3D核心模板
+
 ## 一、[FPController] - 使用Rigidbody&Capsule Collider制作FPS角色控制器
 
 #### 1.创建胶囊并把摄像机一起放到FPcontroller中
@@ -509,7 +512,7 @@ public class FPControler : MonoBehaviour
 
 
 
-## 三、[FPController] - 手臂资源导入实现行走奔跑
+## 四、[FPController] - 手臂资源导入实现行走奔跑
 
 #### 1.导入素材包，应用之前的脚本
 
@@ -694,4 +697,60 @@ public class FPControler : MonoBehaviour
 
 }
 ```
+
+使用变量Velocity控制三种动画
+
+![Snipaste_2023-04-02_12-16-13](../../image/Snipaste_2023-04-02_12-16-13.png)
+
+## 五、[FPController] - 移动脚步声
+
+#### 1.创建FootStepAudioData.cs
+
+```c#
+using System.Collections;
+
+using System.Collections.Generic;
+
+using UnityEngine;
+
+[CreateAssetMenu(menuName ="FPS/FootStepAudioData")]
+
+public class FootStepAudioData : ScriptableObject
+
+{
+
+  public List<FootStepAudio> FootStepAudios = new List<FootStepAudio>();
+
+}
+
+
+
+[System.Serializable]//序列化存储
+
+public class FootStepAudio
+
+{
+
+  public string tag;
+
+  public List<AudioClip> AudioClips = new List<AudioClip>();
+
+  public float Delay;
+
+}
+```
+
+
+
+#### 2.创建FP Foot Step Audio Data
+
+![Snipaste_2023-04-02_14-30-22](../../image/Snipaste_2023-04-02_14-30-22.png)
+
+#### 3.插入素材Footstep
+
+![](../../image/Snipaste_2023-04-02_14-38-30.png)
+
+#### 4.创建FootStepListener.cs
+
+FootStepListener.cs
 
