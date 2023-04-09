@@ -956,7 +956,7 @@ private void FixedUpdate() {
 }
 ```
 
-## 六、实现枪械的射击 - 动画与基础
+## 六、实现枪械的射击 - 动画与脚本
 
 
 
@@ -982,7 +982,7 @@ StylizedProjectilePack1\prefabs\Bullet\Bullet_GoldFire\Bullet_Small_Goldfire\Bul
 
 IWeapon.cs **<u>(武器)</u>**
 
-```
+```c#
 using System.Collections;
 
 using System.Collections.Generic;
@@ -1012,7 +1012,183 @@ namespace Script.Weapon
 
 Firearms.cs **<u>(枪)</u>**
 
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Weapon
+{
+    //枪类
+    public abstract class Firearms : MonoBehaviour,IWeapon
+    {
+        
+        public Transform muzzlePonit;//枪口位置
+        public Transform casingPoint;//蛋壳抛出位置
+        public AudioSource FirearmsReloadAudioSource;//装弹音效
+        public AudioSource FirearmsShootingAudioSource;//射击音效
+
+        public ParticleSystem muzzleParticle;//枪口火焰粒子
+        public ParticleSystem casingParticle;//蛋壳抛出粒子
+        public int ammoInMag = 30;//弹夹
+        public float fireRate;//射速 一秒射出的子弹
+        public int maxAmmoCarried = 120;//总弹夹
+        public GameObject bulletPrefab;//子弹
+
+
+        protected int currentAmmo;
+        protected int currentMaxCarried;
+        protected float lastFireTime;
+        protected Animator gunAnimator;//射击动画
+        protected AnimatorStateInfo gunStateInfo;//动画的播放状态
+        protected virtual void Start()
+        {
+            currentAmmo = ammoInMag;
+            currentMaxCarried = maxAmmoCarried;
+            gunAnimator = GetComponent<Animator>();
+        }
+        public void DoAttack()
+        {
+            Shooting();//射击
+        }
+        protected abstract void Shooting();
+        protected abstract void Reload();
+        protected bool IsAllowShooting()
+        {
+            return Time.time  - lastFireTime > 1/fireRate;
+        }
+
+    }
+}
 ```
+
+AssualtRifle.cs **<u>(突击步枪)</u>**
+
+```c#
+
+
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+namespace Script.Weapon
+{
+    public class AssualtRifle : Firearms
+    {
+        private IEnumerator reloadAmmoCheckerCoroutine;
+        protected override void Start()
+        {
+            base.Start();
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+        }
+        protected override void Reload()
+        {   
+            //图层中顺序由上至下0>1>2，设置第2图层的优先级为1
+            gunAnimator.SetLayerWeight(2,1);
+            gunAnimator.SetTrigger(currentAmmo>0?"ReloadLeft":"ReloadOutOf");
+            //当动画播放完
+            //如果直接使用一直按R时会一直进行协程
+            //StartCoroutine(CheckReloadAmmoAnimationEnd());
+            if(reloadAmmoCheckerCoroutine == null )
+            {
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+            StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+            else
+            {
+                StopCoroutine(reloadAmmoCheckerCoroutine);//停止协程
+                reloadAmmoCheckerCoroutine = null ;
+                reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+                StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+        }
+
+        protected override void Shooting()
+        {
+            if(currentAmmo <= 0)return;
+            if(!IsAllowShooting())return;
+            currentAmmo -= 1;//弹夹减一
+            gunAnimator.Play("Fire",0,0);
+            CreatBullet();
+            muzzleParticle.Play();
+            casingParticle.Play();
+            lastFireTime = Time.time;//记录最后一次开枪的时间
+        }
+        private void Update() {
+            if(Input.GetMouseButton(0))
+            {
+                DoAttack();
+            }  
+            if(Input.GetKeyDown(KeyCode.R))
+            {
+                Reload();
+            }
+        }
+        /**
+         * @description: 创建子弹的飞行速度
+         * @return {*}
+         */        
+        protected void  CreatBullet()
+        {
+            GameObject tmp_Bullet =  Instantiate(bulletPrefab,muzzlePonit.position,muzzlePonit.rotation);
+            var tmp_BulletRigibody = tmp_Bullet.AddComponent<Rigidbody>();
+            tmp_BulletRigibody.velocity = tmp_Bullet.transform.forward *190f;
+        }
+        /**
+         * @description: 装弹动画播放完毕后进行弹夹的替换
+         * @return {*}
+         */        
+        private IEnumerator CheckReloadAmmoAnimationEnd()
+        {
+            while(true)
+            {
+                yield return null;
+                gunStateInfo = gunAnimator.GetCurrentAnimatorStateInfo(2);
+                if(gunStateInfo.IsTag("ReloadTag"))
+                {
+                    //和动画里的过度时间对应
+                    if(gunStateInfo.normalizedTime>=0.89f)
+                    {
+                        int tmp_NeedAmmoCount = ammoInMag - currentAmmo;
+                        int tmp_RemainingAmmo = currentMaxCarried - tmp_NeedAmmoCount;
+                        if(tmp_RemainingAmmo <= 0)
+                        {
+                            currentAmmo += currentMaxCarried;
+                            currentMaxCarried = 0;
+                        }
+                        else
+                        {
+                            currentAmmo = ammoInMag;
+                            currentMaxCarried = tmp_RemainingAmmo;
+                        }
+                        yield break;
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+#### 3.开火动画
+
+在Firearms.cs 中调用gunAnimator.Play("Fire",0,0);
+
+![Snipaste_2023-04-04_16-50-22](../../image/Snipaste_2023-04-04_16-50-22.png)
+
+![Snipaste_2023-04-04_16-51-53](../../image/Snipaste_2023-04-04_16-51-53.png)
+
+#### 4.装弹动画
+
+![](../../image/Snipaste_2023-04-06_13-08-20.png)
+
+![](../../image/Snipaste_2023-04-06_13-09-08.png)
+
+## 七、实现枪械的射击 - 音效与脚本
+
+#### 1.编写脚本
+
+FootStepAudioData.cs
+
+```c#
 using System.Collections;
 
 using System.Collections.Generic;
@@ -1023,149 +1199,31 @@ namespace Script.Weapon
 
 {
 
-  //枪类
+  //继承ScriptableObject类，如果你想创建不需要附加到游戏对象上的对象，你可以从中派生出一个类。
 
-  public abstract class Firearms : MonoBehaviour,IWeapon
+  [CreateAssetMenu(menuName = "FPS/Firearms Audio Data")]
+
+  public class FireArmsAudioDate : ScriptableObject
 
   {
 
-​    
+​    public AudioClip shootingAudio;
 
-​    public Transform muzzlePonit;//枪口位置
+​    //TODO消音器
 
-​    public Transform casingPoint;//蛋壳抛出位置
+​    public AudioClip reloadLeft;
 
-​    public ParticleSystem muzzleParticle;//枪口火焰粒子
-
-​    public ParticleSystem casingParticle;//蛋壳抛出粒子
-
-​    public int ammoInMag = 30;//弹夹
-
-​    public float fireRate;//射速 一秒射出的子弹
-
-​    public int maxAmmoCarried = 120;//总弹夹
-
-
-
-
-
-​    protected int currentAmmo;
-
-​    protected int currentMaxCarried;
-
-​    protected float lastFireTime;
-
-​    protected Animator gunAnimator;//射击动画
-
-​    protected virtual void Start()
-
-​    {
-
-​      currentAmmo = ammoInMag;
-
-​      currentMaxCarried = maxAmmoCarried;
-
-​      gunAnimator = GetComponent<Animator>();
-
-​    }
-
-​    public void DoAttack()
-
-​    {
-
-​      if(currentAmmo <= 0)return;
-
-​      if(!IsAllowShooting())return;
-
-​      currentAmmo -= 1;//弹夹减一
-
-​      gunAnimator.Play("Fire",0,0);
-
-​      Shooting();//射击
-
-​      lastFireTime = Time.time;//记录最后一次开枪的时间
-
-​    }
-
-​    protected abstract void Shooting();
-
-​    protected abstract void Reload();
-
-​    private bool IsAllowShooting()
-
-​    {
-
-​      return Time.time  - lastFireTime > 1/fireRate;
-
-​    }
+​    public AudioClip reloadOutOf;
 
   }
 
 }
 ```
 
-AssualtRifle.cs **<u>(AK47)</u>**
-
-```
-using UnityEngine;
-
-namespace Script.Weapon
-
-{
-
-  public class AssualtRifle : Firearms
-
-  {
-
-​    protected override void Reload()
-
-​    {
-
-​      currentAmmo =ammoInMag;
-
-​      currentMaxCarried -= ammoInMag;
-
-​    }
 
 
+#### 2.创建AK47 Firearms Audio Data序列化对象
 
-​    protected override void Shooting()
+![](../../image/Snipaste_2023-04-09_19-34-25.png)
 
-​    {
-
-​      Debug.Log("shooting");
-
-​    }
-
-​    private void Update() {
-
-​      if(Input.GetMouseButton(0))
-
-​      {
-
-​        DoAttack();
-
-​      }
-
-​      if(Input.GetKeyDown(KeyCode.R))
-
-​      {
-
-​        Reload();
-
-​      }
-
-​    }
-
-  }
-
-}
-```
-
-#### 3.对应的动画
-
-在Firearms.cs 中调用gunAnimator.Play("Fire",0,0);
-
-![Snipaste_2023-04-04_16-50-22](../../image/Snipaste_2023-04-04_16-50-22.png)
-
-![Snipaste_2023-04-04_16-51-53](../../image/Snipaste_2023-04-04_16-51-53.png)
+![](../../image/Snipaste_2023-04-09_19-40-00.png)
