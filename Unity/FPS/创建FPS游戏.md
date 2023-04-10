@@ -299,7 +299,7 @@ public class FPMove : MonoBehaviour
 
 ![Snipaste_2023-03-30_14-44-42](../../image/Snipaste_2023-03-30_14-44-42.png)
 
-#### 2.编辑FPControler.cs脚本
+#### 2.编辑FPControler脚本
 
 FPControler.cs
 
@@ -1021,14 +1021,16 @@ namespace Script.Weapon
     //枪类
     public abstract class Firearms : MonoBehaviour,IWeapon
     {
-        
         public Transform muzzlePonit;//枪口位置
         public Transform casingPoint;//蛋壳抛出位置
+
         public AudioSource FirearmsReloadAudioSource;//装弹音效
         public AudioSource FirearmsShootingAudioSource;//射击音效
+        public FireArmsAudioDate fireArmsAudioDate;//音源数据
 
         public ParticleSystem muzzleParticle;//枪口火焰粒子
         public ParticleSystem casingParticle;//蛋壳抛出粒子
+        
         public int ammoInMag = 30;//弹夹
         public float fireRate;//射速 一秒射出的子弹
         public int maxAmmoCarried = 120;//总弹夹
@@ -1184,7 +1186,7 @@ namespace Script.Weapon
 
 ## 七、实现枪械的射击 - 音效与脚本
 
-#### 1.编写脚本
+#### 1.编写FootStepAudioData脚本
 
 FootStepAudioData.cs
 
@@ -1227,3 +1229,532 @@ namespace Script.Weapon
 ![](../../image/Snipaste_2023-04-09_19-34-25.png)
 
 ![](../../image/Snipaste_2023-04-09_19-40-00.png)
+
+#### 3. 编辑AssualtRifle脚本
+
+AssualtRifle.cs
+
+```c#
+using UnityEngine;
+
+using System.Collections;
+
+using System.Collections.Generic;
+
+namespace Script.Weapon
+
+{
+
+  public class AssualtRifle : Firearms
+
+  {
+
+​    private IEnumerator reloadAmmoCheckerCoroutine;
+
+​    protected override void Start()
+
+​    {
+
+​      base.Start();
+
+​      reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+
+​    }
+
+​    protected override void Reload()
+
+​    {  
+
+​      //图层中顺序由上至下0>1>2，设置第2图层的优先级为1
+
+​      gunAnimator.SetLayerWeight(2,1);
+
+​      gunAnimator.SetTrigger(currentAmmo>0?"ReloadLeft":"ReloadOutOf");
+
+​      //当动画播放完
+
+​      //如果直接使用一直按R时会一直进行协程
+
+​      //StartCoroutine(CheckReloadAmmoAnimationEnd());
+
+​      FirearmsReloadAudioSource.clip = currentAmmo>0?fireArmsAudioDate.reloadLeft:fireArmsAudioDate.reloadOutOf;
+
+​      FirearmsReloadAudioSource.Play();
+
+​      if(reloadAmmoCheckerCoroutine == null )
+
+​      {
+
+​      reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+
+​      StartCoroutine(reloadAmmoCheckerCoroutine);
+
+​      }
+
+​      else
+
+​      {
+
+​        StopCoroutine(reloadAmmoCheckerCoroutine);//停止协程
+
+​        reloadAmmoCheckerCoroutine = null ;
+
+​        reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+
+​        StartCoroutine(reloadAmmoCheckerCoroutine);
+
+​      }
+
+​    }
+
+
+
+​    protected override void Shooting()
+
+​    {
+
+​      if(currentAmmo <= 0)return;
+
+​      if(!IsAllowShooting())return;
+
+​      currentAmmo -= 1;//弹夹减一
+
+​      gunAnimator.Play("Fire",0,0);
+
+​      CreatBullet();
+
+​      //开枪音效
+
+​      FirearmsShootingAudioSource.clip = fireArmsAudioDate.shootingAudio;
+
+​      FirearmsShootingAudioSource.Play();
+
+​      //开枪特效
+
+​      muzzleParticle.Play();
+
+​      casingParticle.Play();
+
+​      lastFireTime = Time.time;//记录最后一次开枪的时间
+
+​    }
+
+​    private void Update() {
+
+​      if(Input.GetMouseButton(0))
+
+​      {
+
+​        DoAttack();
+
+​      }  
+
+​      if(Input.GetKeyDown(KeyCode.R))
+
+​      {
+
+​        Reload();
+
+​      }
+
+​    }
+
+​    /**
+
+​     \* @description: 创建子弹的飞行速度
+
+​     \* @return {*}
+
+​     */     
+
+​    protected void  CreatBullet()
+
+​    {
+
+​      GameObject tmp_Bullet =  Instantiate(bulletPrefab,muzzlePonit.position,muzzlePonit.rotation);
+
+​      var tmp_BulletRigibody = tmp_Bullet.AddComponent<Rigidbody>();
+
+​      tmp_BulletRigibody.velocity = tmp_Bullet.transform.forward *190f;
+
+​    }
+
+​    /**
+
+​     \* @description: 装弹动画播放完毕后进行弹夹的替换
+
+​     \* @return {*}
+
+​     */     
+
+​    private IEnumerator CheckReloadAmmoAnimationEnd()
+
+​    {
+
+​      while(true)
+
+​      {
+
+​        yield return null;
+
+​        gunStateInfo = gunAnimator.GetCurrentAnimatorStateInfo(2);
+
+​        if(gunStateInfo.IsTag("ReloadTag"))
+
+​        {
+
+​          
+
+​          //和动画里的过度时间对应
+
+​          if(gunStateInfo.normalizedTime>=0.89f)
+
+​          {
+
+​            int tmp_NeedAmmoCount = ammoInMag - currentAmmo;
+
+​            int tmp_RemainingAmmo = currentMaxCarried - tmp_NeedAmmoCount;
+
+​            if(tmp_RemainingAmmo <= 0)
+
+​            {
+
+​              currentAmmo += currentMaxCarried;
+
+​              currentMaxCarried = 0;
+
+​            }
+
+​            else
+
+​            {
+
+​              currentAmmo = ammoInMag;
+
+​              currentMaxCarried = tmp_RemainingAmmo;
+
+​            }
+
+​            yield break;
+
+​          }
+
+​        }
+
+​      }
+
+​    }
+
+  }
+
+}
+```
+
+## 八、实现枪械的射击 - 瞄准与脚本
+
+#### 1.瞄准动画
+
+![](../../image/Snipaste_2023-04-10_17-52-55.png)
+
+#### 2.编写脚本
+
+```c#
+using UnityEngine;
+
+using System.Collections;
+
+using System.Collections.Generic;
+
+namespace Script.Weapon
+
+{
+
+  public class AssualtRifle : Firearms
+
+  {
+
+​    private IEnumerator reloadAmmoCheckerCoroutine;
+
+​    private IEnumerator doAimCoroutine;
+
+​    protected override void Start()
+
+​    {
+
+​      base.Start();
+
+​      reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+
+​      doAimCoroutine = DoAim();
+
+​    }
+
+​    protected override void Reload()
+
+​    {  
+
+​      //图层中顺序由上至下0>1>2，设置第2图层的优先级为1
+
+​      gunAnimator.SetLayerWeight(2,1);
+
+​      gunAnimator.SetTrigger(currentAmmo>0?"ReloadLeft":"ReloadOutOf");
+
+​      //当动画播放完
+
+​      //如果直接使用一直按R时会一直进行协程
+
+​      //StartCoroutine(CheckReloadAmmoAnimationEnd());
+
+​      FirearmsReloadAudioSource.clip = currentAmmo>0?fireArmsAudioDate.reloadLeft:fireArmsAudioDate.reloadOutOf;
+
+​      FirearmsReloadAudioSource.Play();
+
+​      if(reloadAmmoCheckerCoroutine == null )
+
+​      {
+
+​      reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+
+​      StartCoroutine(reloadAmmoCheckerCoroutine);
+
+​      }
+
+​      else
+
+​      {
+
+​        StopCoroutine(reloadAmmoCheckerCoroutine);//停止协程
+
+​        reloadAmmoCheckerCoroutine = null ;
+
+​        reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+
+​        StartCoroutine(reloadAmmoCheckerCoroutine);
+
+​      }
+
+​    }
+
+
+
+​    protected override void Shooting()
+
+​    {
+
+​      if(currentAmmo <= 0)return;
+
+​      if(!IsAllowShooting())return;
+
+​      currentAmmo -= 1;//弹夹减一
+
+​      gunAnimator.Play("Fire",isAim?1:0,0);
+
+​      CreatBullet();
+
+​      //开枪音效
+
+​      FirearmsShootingAudioSource.clip = fireArmsAudioDate.shootingAudio;
+
+​      FirearmsShootingAudioSource.Play();
+
+​      //开枪特效
+
+​      muzzleParticle.Play();
+
+​      casingParticle.Play();
+
+​      lastFireTime = Time.time;//记录最后一次开枪的时间
+
+​    }
+
+​    protected override void Aim()
+
+​    {
+
+​      gunAnimator.SetBool("Aim",isAim);
+
+​      if(doAimCoroutine == null)
+
+​      {
+
+​        doAimCoroutine = DoAim();
+
+​        StartCoroutine(doAimCoroutine);
+
+​      }
+
+​      else
+
+​      {
+
+​        StopCoroutine(doAimCoroutine);
+
+​        doAimCoroutine = null;
+
+​        doAimCoroutine = DoAim();
+
+​        StartCoroutine(doAimCoroutine);
+
+​      }
+
+​      
+
+​      
+
+​    }
+
+​    private void Update() {
+
+​      if(Input.GetMouseButton(0))
+
+​      {
+
+​        DoAttack();
+
+​      }  
+
+​      if(Input.GetKeyDown(KeyCode.R))
+
+​      {
+
+​        Reload();
+
+​      }
+
+​      if(Input.GetMouseButtonDown(1))
+
+​      {
+
+​        isAim=true;
+
+​        Aim();
+
+​      }
+
+​      if(Input.GetMouseButtonUp(1))
+
+​      {
+
+​        isAim=false;
+
+​        Aim();
+
+​      }
+
+​    }
+
+​    /**
+
+​     \* @description: 创建子弹的飞行速度
+
+​     \* @return {*}
+
+​     */     
+
+​    protected void  CreatBullet()
+
+​    {
+
+​      GameObject tmp_Bullet =  Instantiate(bulletPrefab,muzzlePonit.position,muzzlePonit.rotation);
+
+​      var tmp_BulletRigibody = tmp_Bullet.AddComponent<Rigidbody>();
+
+​      tmp_BulletRigibody.velocity = tmp_Bullet.transform.forward *190f;
+
+​    }
+
+​    \#region 换弹检测
+
+​    /**
+
+​     \* @description: 装弹动画播放完毕后进行弹夹的替换
+
+​     \* @return {*}
+
+​     */     
+
+​    private IEnumerator CheckReloadAmmoAnimationEnd()
+
+​    {
+
+​      while(true)
+
+​      {
+
+​        yield return null;
+
+​        gunStateInfo = gunAnimator.GetCurrentAnimatorStateInfo(2);
+
+​        if(gunStateInfo.IsTag("ReloadTag"))
+
+​        {
+
+​          
+
+​          //和动画里的过度时间对应
+
+​          if(gunStateInfo.normalizedTime>=0.89f)
+
+​          {
+
+​            int tmp_NeedAmmoCount = ammoInMag - currentAmmo;
+
+​            int tmp_RemainingAmmo = currentMaxCarried - tmp_NeedAmmoCount;
+
+​            if(tmp_RemainingAmmo <= 0)
+
+​            {
+
+​              currentAmmo += currentMaxCarried;
+
+​              currentMaxCarried = 0;
+
+​            }
+
+​            else
+
+​            {
+
+​              currentAmmo = ammoInMag;
+
+​              currentMaxCarried = tmp_RemainingAmmo;
+
+​            }
+
+​            yield break;
+
+​          }
+
+​        }
+
+​      }
+
+​    }
+
+​    \#endregion
+
+​    private IEnumerator DoAim()
+
+​    {
+
+​      while(true)
+
+​      {
+
+​        yield return null;
+
+
+
+​        float tmp_CurrentFov = 0;
+
+​        eyeCamera.fieldOfView = Mathf.SmoothDamp(eyeCamera.fieldOfView,isAim?45:originCameraFOV,ref tmp_CurrentFov,Time.deltaTime*2);
+
+​      }
+
+​    }
+
+  }
+
+}
+```
+
