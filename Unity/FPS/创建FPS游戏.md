@@ -1758,3 +1758,235 @@ namespace Script.Weapon
 }
 ```
 
+## 九、实现枪械的射击 - 弹孔与音效
+
+#### 1.编写脚本
+
+AssualtRifle.cs
+
+```c#
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+namespace Script.Weapon
+{
+    public class AssualtRifle : Firearms
+    {
+        private IEnumerator reloadAmmoCheckerCoroutine;
+        private IEnumerator doAimCoroutine;
+        protected override void Start()
+        {
+            base.Start();
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+            doAimCoroutine = DoAim();
+        }
+        protected override void Reload()
+        {   
+            //图层中顺序由上至下0>1>2，设置第2图层的优先级为1
+            gunAnimator.SetLayerWeight(2,1);
+            gunAnimator.SetTrigger(currentAmmo>0?"ReloadLeft":"ReloadOutOf");
+            //当动画播放完
+            //如果直接使用一直按R时会一直进行协程
+            //StartCoroutine(CheckReloadAmmoAnimationEnd());
+            FirearmsReloadAudioSource.clip = currentAmmo>0?fireArmsAudioDate.reloadLeft:fireArmsAudioDate.reloadOutOf;
+            FirearmsReloadAudioSource.Play();
+            if(reloadAmmoCheckerCoroutine == null )
+            {
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+            StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+            else
+            {
+                StopCoroutine(reloadAmmoCheckerCoroutine);//停止协程
+                reloadAmmoCheckerCoroutine = null ;
+                reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+                StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+        }
+
+        protected override void Shooting()
+        {
+            if(currentAmmo <= 0)return;
+            if(!IsAllowShooting())return;
+            currentAmmo -= 1;//弹夹减一
+            gunAnimator.Play("Fire",isAim?1:0,0);
+            CreatBullet();
+            //开枪音效
+            FirearmsShootingAudioSource.clip = fireArmsAudioDate.shootingAudio;
+            FirearmsShootingAudioSource.Play();
+            //开枪特效
+            muzzleParticle.Play();
+            casingParticle.Play();
+            lastFireTime = Time.time;//记录最后一次开枪的时间
+        }
+        protected override void Aim()
+        {
+            gunAnimator.SetBool("Aim",isAim);
+            if(doAimCoroutine == null)
+            {
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            }
+            else
+            {
+                StopCoroutine(doAimCoroutine);
+                doAimCoroutine = null;
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            }
+            
+            
+        }
+        private void Update() {
+            if(Input.GetMouseButton(0))
+            {
+                DoAttack();
+            }  
+            if(Input.GetKeyDown(KeyCode.R))
+            {
+                Reload();
+            }
+            if(Input.GetMouseButtonDown(1))
+            {
+                isAim=true;
+                Aim();
+            }
+            if(Input.GetMouseButtonUp(1))
+            {
+                isAim=false;
+                Aim();
+            }
+        }
+        /**
+         * @description: 创建子弹的飞行速度
+         * @return {*}
+         */        
+        protected void  CreatBullet()
+        {
+            GameObject tmp_Bullet =  Instantiate(bulletPrefab,muzzlePonit.position,muzzlePonit.rotation);
+            var tmp_BulletScript = tmp_Bullet.AddComponent<Bullet>();
+            tmp_BulletScript.tmp_DestroyBullet = tmp_Bullet;
+            tmp_BulletScript.shootImpactAudioData = shootImpactAudioData;
+            tmp_BulletScript.impactPrefab = bulletImpactPrefabe;//该枪射击弹坑
+            tmp_BulletScript.bulletSpeed = 19f;//该枪子弹速度 
+        }
+        #region 换弹检测
+        /**
+         * @description: 装弹动画播放完毕后进行弹夹的替换
+         * @return {*}
+         */        
+        private IEnumerator CheckReloadAmmoAnimationEnd()
+        {
+            while(true)
+            {
+                yield return null;
+                gunStateInfo = gunAnimator.GetCurrentAnimatorStateInfo(2);
+                if(gunStateInfo.IsTag("ReloadTag"))
+                {
+                    
+                    //和动画里的过度时间对应
+                    if(gunStateInfo.normalizedTime>=0.89f)
+                    {
+                        int tmp_NeedAmmoCount = ammoInMag - currentAmmo;
+                        int tmp_RemainingAmmo = currentMaxCarried - tmp_NeedAmmoCount;
+                        if(tmp_RemainingAmmo <= 0)
+                        {
+                            currentAmmo += currentMaxCarried;
+                            currentMaxCarried = 0;
+                        }
+                        else
+                        {
+                            currentAmmo = ammoInMag;
+                            currentMaxCarried = tmp_RemainingAmmo;
+                        }
+                        yield break;
+                    }
+                }
+            }
+        }
+        #endregion
+        private IEnumerator DoAim()
+        {
+            while(true)
+            {
+                yield return null;
+                float tmp_CurrentFov = 0;
+                eyeCamera.fieldOfView = Mathf.SmoothDamp(eyeCamera.fieldOfView,isAim?45:originCameraFOV,ref tmp_CurrentFov,Time.deltaTime*2);
+            }
+        }
+    }
+}
+```
+
+Bullet.cs
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Weapon
+{
+    public class Bullet : MonoBehaviour
+    {
+        public float bulletSpeed = 19f;//子弹速度
+        public GameObject impactPrefab;//碰撞弹印
+        public GameObject tmp_DestroyBullet;//子弹(用于销毁)
+        public ShootImpactAudioData shootImpactAudioData;//音效
+        private Vector3 prevPosition;
+        private Transform bulletTransform;
+        private void Awake() 
+        {
+            bulletTransform = GetComponent<Transform>();
+            prevPosition = bulletTransform.position;
+        }
+        private void FixedUpdate() {
+            prevPosition = bulletTransform.position;
+            bulletTransform.Translate(0,0,bulletSpeed*Time.deltaTime);
+            if(!Physics.Raycast(prevPosition,(bulletTransform.position - prevPosition).normalized,out RaycastHit tmp_Hit,(bulletTransform.position-prevPosition).magnitude))
+            {
+                return;
+            }
+            else
+            {
+                //特效
+                var tmp_BulletEffect = Instantiate(impactPrefab,tmp_Hit.point,Quaternion.LookRotation(tmp_Hit.normal,Vector3.up));
+                Destroy(tmp_DestroyBullet,0);
+                Destroy(tmp_BulletEffect,3f);
+
+                //音频
+                var tmp_TagWithAudio = shootImpactAudioData.impactTagsWithAuidos.Find((tmp_AudioData) =>tmp_AudioData.tag.Equals(tmp_Hit.collider.tag));
+                if(tmp_TagWithAudio == null)return;
+                int tmp_Length = tmp_TagWithAudio.impactAduioClips.Count;
+                AudioClip tmp_AudioClip =  tmp_TagWithAudio.impactAduioClips[Random.Range(0,tmp_Length)];
+                AudioSource.PlayClipAtPoint(tmp_AudioClip,tmp_Hit.point,1f);
+            }
+        }
+    }
+}
+
+```
+
+ShootImpactAudioData.cs
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Weapon
+
+{
+    [CreateAssetMenu(menuName ="FPS/Shoot Impact Audio Data")]
+    public class ShootImpactAudioData : ScriptableObject
+    {
+        public List<impactTagsWithAuido> impactTagsWithAuidos;
+    }
+    [System.Serializable]
+    public class impactTagsWithAuido
+    {
+        public string tag;
+        public List<AudioClip> impactAduioClips;
+    }
+}
+
+```
+
