@@ -1990,3 +1990,319 @@ namespace Script.Weapon
 
 ```
 
+## 十、实现枪械的后坐力
+
+#### 1.编写脚本
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Weapon
+{
+    //枪类
+    public abstract class Firearms : MonoBehaviour,IWeapon
+    {
+        public Transform muzzlePonit;//枪口位置
+        public Transform casingPoint;//蛋壳抛出位置
+        public Camera eyeCamera;//倍镜
+
+        public AudioSource FirearmsReloadAudioSource;//装弹音效
+        public AudioSource FirearmsShootingAudioSource;//射击音效
+        public FireArmsAudioDate fireArmsAudioDate;//音源数据
+
+        public ParticleSystem muzzleParticle;//枪口火焰粒子
+        public ParticleSystem casingParticle;//蛋壳抛出粒子
+        public ShootImpactAudioData shootImpactAudioData;//子弹碰撞音效
+        
+        public int ammoInMag = 30;//弹夹
+        public float fireRate;//射速 一秒射出的子弹
+        public int maxAmmoCarried = 120;//总弹夹
+        public GameObject bulletPrefab;//子弹
+        public GameObject bulletImpactPrefabe;//子弹碰撞
+
+        protected float originCameraFOV;//初始的视野
+        protected int currentAmmo;
+        protected int currentMaxCarried;
+        protected float lastFireTime;
+        protected bool isAim = false;
+        protected Animator gunAnimator;//射击动画
+        protected AnimatorStateInfo gunStateInfo;//动画的播放状态
+        
+        protected FPMouseLoook mouseLook;
+        protected virtual void Start()
+        {
+            currentAmmo = ammoInMag;
+            currentMaxCarried = maxAmmoCarried;
+            gunAnimator = GetComponent<Animator>();
+            originCameraFOV = eyeCamera.fieldOfView;
+            mouseLook = FindObjectOfType<FPMouseLoook>();
+        }
+        public void DoAttack()
+        {
+            Shooting();//射击
+        }
+        protected abstract void Shooting();
+        protected abstract void Reload();
+        protected abstract void Aim();
+        protected bool IsAllowShooting()
+        {
+            return Time.time  - lastFireTime > 1/fireRate;
+        }
+
+    }
+}
+```
+
+```c#
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+namespace Script.Weapon
+{
+    public class AssualtRifle : Firearms
+    {
+        private IEnumerator reloadAmmoCheckerCoroutine;
+        private IEnumerator doAimCoroutine;
+        
+        protected override void Start()
+        {
+            base.Start();
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+            doAimCoroutine = DoAim();
+        }
+        protected override void Reload()
+        {   
+            //图层中顺序由上至下0>1>2，设置第2图层的优先级为1
+            gunAnimator.SetLayerWeight(2,1);
+            gunAnimator.SetTrigger(currentAmmo>0?"ReloadLeft":"ReloadOutOf");
+            //当动画播放完
+            //如果直接使用一直按R时会一直进行协程
+            //StartCoroutine(CheckReloadAmmoAnimationEnd());
+            FirearmsReloadAudioSource.clip = currentAmmo>0?fireArmsAudioDate.reloadLeft:fireArmsAudioDate.reloadOutOf;
+            FirearmsReloadAudioSource.Play();
+            if(reloadAmmoCheckerCoroutine == null )
+            {
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+            StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+            else
+            {
+                StopCoroutine(reloadAmmoCheckerCoroutine);//停止协程
+                reloadAmmoCheckerCoroutine = null ;
+                reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+                StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+        }
+
+        protected override void Shooting()
+        {
+            if(currentAmmo <= 0)return;
+            if(!IsAllowShooting())return;
+            currentAmmo -= 1;//弹夹减一
+            gunAnimator.Play("Fire",isAim?1:0,0);
+            CreatBullet();
+            //开枪音效
+            FirearmsShootingAudioSource.clip = fireArmsAudioDate.shootingAudio;
+            FirearmsShootingAudioSource.Play();
+            //开枪特效
+            muzzleParticle.Play();
+            casingParticle.Play();
+            mouseLook.FiringForTest();
+            lastFireTime = Time.time;//记录最后一次开枪的时间
+        }
+        protected override void Aim()
+        {
+            gunAnimator.SetBool("Aim",isAim);
+            if(doAimCoroutine == null)
+            {
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            }
+            else
+            {
+                StopCoroutine(doAimCoroutine);
+                doAimCoroutine = null;
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            }
+            
+            
+        }
+        private void Update() {
+            if(Input.GetMouseButton(0))
+            {
+                DoAttack();
+            }  
+            if(Input.GetKeyDown(KeyCode.R))
+            {
+                Reload();
+            }
+            if(Input.GetMouseButtonDown(1))
+            {
+                isAim=true;
+                Aim();
+            }
+            if(Input.GetMouseButtonUp(1))
+            {
+                isAim=false;
+                Aim();
+            }
+        }
+        /**
+         * @description: 创建子弹的飞行速度
+         * @return {*}
+         */        
+        protected void  CreatBullet()
+        {
+            GameObject tmp_Bullet =  Instantiate(bulletPrefab,muzzlePonit.position,muzzlePonit.rotation);
+            var tmp_BulletScript = tmp_Bullet.AddComponent<Bullet>();
+            tmp_BulletScript.tmp_DestroyBullet = tmp_Bullet;
+            tmp_BulletScript.shootImpactAudioData = shootImpactAudioData;
+            tmp_BulletScript.impactPrefab = bulletImpactPrefabe;//该枪射击弹坑
+            tmp_BulletScript.bulletSpeed = 19f;//该枪子弹速度 
+        }
+        #region 换弹检测
+        /**
+         * @description: 装弹动画播放完毕后进行弹夹的替换
+         * @return {*}
+         */        
+        private IEnumerator CheckReloadAmmoAnimationEnd()
+        {
+            while(true)
+            {
+                yield return null;
+                gunStateInfo = gunAnimator.GetCurrentAnimatorStateInfo(2);
+                if(gunStateInfo.IsTag("ReloadTag"))
+                {
+                    
+                    //和动画里的过度时间对应
+                    if(gunStateInfo.normalizedTime>=0.89f)
+                    {
+                        int tmp_NeedAmmoCount = ammoInMag - currentAmmo;
+                        int tmp_RemainingAmmo = currentMaxCarried - tmp_NeedAmmoCount;
+                        if(tmp_RemainingAmmo <= 0)
+                        {
+                            currentAmmo += currentMaxCarried;
+                            currentMaxCarried = 0;
+                        }
+                        else
+                        {
+                            currentAmmo = ammoInMag;
+                            currentMaxCarried = tmp_RemainingAmmo;
+                        }
+                        yield break;
+                    }
+                }
+            }
+        }
+        #endregion
+        private IEnumerator DoAim()
+        {
+            while(true)
+            {
+                yield return null;
+                float tmp_CurrentFov = 0;
+                eyeCamera.fieldOfView = Mathf.SmoothDamp(eyeCamera.fieldOfView,isAim?45:originCameraFOV,ref tmp_CurrentFov,Time.deltaTime*2);
+            }
+        }
+    }
+}
+```
+
+```c#
+using System.Collections;
+
+using System.Collections.Generic;
+
+using UnityEngine;
+
+//视角控制
+
+public class FPMouseLoook : MonoBehaviour
+
+{
+
+  //获得自身的组件，一般写在开头,获得的组件一般在Awake里初始化
+
+  private Transform cameraTransform;
+
+  [SerializeField] private Transform characterTransform;
+
+  
+
+  public float mouseSensitivity = 5.0f;//鼠标灵敏度
+  public Vector2 maxInAngle = new Vector2(-65,65);//向上向下看最大角度
+  public AnimationCurve recoilAnimationCurve;//后坐力曲线
+  public Vector2 recoilRange = new Vector2(0.5f,0.2f);//后坐力范围
+  public float recoilFadeOutTime = 0.3f;//后坐力缓冲系数
+  private Transform cameraTransForm;
+  private Vector3 cameraRotation;
+  private float currentRecoilTime;
+  private Vector2 currentRecoil;
+
+  private void Awake() 
+
+  {
+
+    cameraTransform = GetComponent<Transform>();
+
+    //cameraTransform = transform;
+    currentRecoil = recoilRange;
+
+  }
+
+  private void Update() {
+
+    var tmp_MouseX = Input.GetAxis("Mouse X");
+
+    var tmp_MouseY = Input.GetAxis("Mouse Y");
+
+    //摄像机Rotation
+
+    //y值增加向右旋转
+
+    cameraRotation.y += tmp_MouseX * mouseSensitivity;
+
+    //x轴增加向下旋转
+
+    cameraRotation.x -= tmp_MouseY * mouseSensitivity;
+
+    //限制向上向下看的角度
+    //后坐力影响
+    CalculateRecoilOffset();
+    cameraRotation.y += currentRecoil.y;
+    cameraRotation.x -= currentRecoil.x;
+    
+
+    cameraRotation.x =  Mathf.Clamp(cameraRotation.x,maxInAngle.x,maxInAngle.y);
+
+    //Quaternion.Euler返回一个旋转，它围绕 z 轴旋转 z 度、围绕 x 轴旋转 x 度、围绕 y 轴旋转 y 度（按该顺序应用）
+
+    cameraTransform.rotation = Quaternion.Euler(x:cameraRotation.x,y:cameraRotation.y,z:0);
+      
+//使用键盘控制移动，同时前进方向应为注视的方向
+      
+    characterTransform.rotation = Quaternion.Euler(x:0,y:cameraRotation.y,z:0);
+
+  }
+  /**
+   * @description: 计算后坐力偏移
+   * @return {*}
+   */  
+  private void CalculateRecoilOffset()
+  {
+    currentRecoilTime+= Time.deltaTime;
+    float tmp_RecoilFraction = currentRecoilTime / recoilFadeOutTime;
+    float tmp_RecoilValue = recoilAnimationCurve.Evaluate(tmp_RecoilFraction);
+    currentRecoil = Vector2.Lerp(Vector2.zero,currentRecoil,tmp_RecoilValue);
+  }
+  public void FiringForTest()
+  {
+    currentRecoil += recoilRange;
+    //每次射击时，使曲线开始时间为零
+    currentRecoilTime = 0;
+  }
+}
+```
+
