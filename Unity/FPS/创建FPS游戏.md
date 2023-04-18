@@ -163,7 +163,11 @@ public class FPMove : MonoBehaviour
 }
 ```
 
-#### 5.添加一个平面,同时使角色只有在地面上才移动，添加跳跃，修改FPMove.cs
+#### 5.编写脚本
+
+FPMove.cs
+
+添加一个平面,同时使角色只有在地面上才移动，添加跳跃
 
 ```c#
 using System;
@@ -1758,9 +1762,9 @@ namespace Script.Weapon
 }
 ```
 
-## 九、实现枪械的射击 - 弹孔与音效
+## 九、实现枪械的射击 - 补充
 
-#### 1.编写脚本
+#### 1.弹孔与音效
 
 AssualtRifle.cs
 
@@ -1990,9 +1994,9 @@ namespace Script.Weapon
 
 ```
 
-## 十、实现枪械的后坐力
+#### 2.后坐力
 
-#### 1.编写脚本
+Firearms.cs
 
 ```c#
 using System.Collections;
@@ -2306,9 +2310,7 @@ public class FPMouseLoook : MonoBehaviour
 }
 ```
 
-## 十一、实现子弹的散射
-
-#### 1.编写脚本
+#### 3.散射
 
 Firearms.cs
 
@@ -2640,3 +2642,699 @@ namespace Script.Weapon
 }
 ```
 
+#### 4.射击反馈-震屏
+
+CameraSpringUtillity.cs
+
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CameraSpringUtillity
+{
+    public Vector3 values;
+    private Vector3 dampVaules;
+    private float frequence;
+    private float damp;
+    public CameraSpringUtillity(float _frequence,float _damp)
+    {
+        frequence = _frequence;
+        damp = _damp;
+    }
+    public void UpdateSpring(float _deltaTime,Vector3 _target)
+    {
+        values -= _deltaTime * frequence * dampVaules;
+        dampVaules = Vector3.Lerp(dampVaules,values - _target,damp*_deltaTime);
+    }
+}
+
+```
+
+CameraSpring.cs
+
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CameraSpring : MonoBehaviour
+{
+    public Vector2 minRecoilRange;
+    public Vector2 maxRecoilRange;
+    public float frequence = 25;
+    public float damp = 15;
+    private Transform cameraSpringTransform;
+    private CameraSpringUtillity cameraSpringUtillity;
+    private void Start() {
+        cameraSpringUtillity = new CameraSpringUtillity(frequence,damp);
+        cameraSpringTransform = transform;
+    }
+    private void Update() {
+        cameraSpringUtillity.UpdateSpring(Time.deltaTime,Vector3.zero);
+        cameraSpringTransform.localRotation = Quaternion.Slerp(cameraSpringTransform.localRotation,
+        Quaternion.Euler(cameraSpringUtillity.values),Time.deltaTime * 10);
+    }
+    /**
+     * @description: 屏幕左右震动
+     * @return {*}
+     */    
+    public void StartCameraSpring()
+    {
+        cameraSpringUtillity.values = new Vector3(0,
+        UnityEngine.Random.Range(minRecoilRange.x,maxRecoilRange.x),
+        UnityEngine.Random.Range(minRecoilRange.y,maxRecoilRange.y));
+    }
+}
+
+```
+
+只需要在FPMouseLook中调用cameraSpring.StartCameraSpring()函数即可实现屏幕抖动。
+
+## 十、武器控制-切换枪支
+
+#### 1.编写脚本
+
+Firearms.cs
+
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Weapon
+{
+    //枪类
+    public abstract class Firearms : MonoBehaviour,IWeapon
+    {
+        public Transform muzzlePonit;//枪口位置
+        public Transform casingPoint;//蛋壳抛出位置
+        public Camera eyeCamera;//倍镜
+
+        public AudioSource FirearmsReloadAudioSource;//装弹音效
+        public AudioSource FirearmsShootingAudioSource;//射击音效
+        public FireArmsAudioDate fireArmsAudioDate;//音源数据
+
+        public ParticleSystem muzzleParticle;//枪口火焰粒子
+        public ParticleSystem casingParticle;//蛋壳抛出粒子
+        public ShootImpactAudioData shootImpactAudioData;//子弹碰撞音效
+        
+        public int ammoInMag = 30;//弹夹
+        public float fireRate;//射速 一秒射出的子弹
+        public int maxAmmoCarried = 120;//总弹夹
+        public GameObject bulletPrefab;//子弹
+        public GameObject bulletImpactPrefabe;//子弹碰撞
+        public float spreadAngle = 70;//子弹散射
+        public AnimationCurve horizontalRecoilAnimationCurve;//水平后坐力曲线
+        public AnimationCurve verticalRecoilAnimationCurve;//垂直后坐力曲线
+        internal Animator gunAnimator;//射击动画
+
+
+        protected float originCameraFOV;//初始的视野
+        protected int currentAmmo;
+        protected int currentMaxCarried;
+        protected float lastFireTime;
+        protected bool isAim = false;
+        protected AnimatorStateInfo gunStateInfo;//动画的播放状态
+        protected bool isshooting;
+        protected FPMouseLook mouseLook;
+        private IEnumerator doAimCoroutine;
+        private bool isHoldingTrrigger;
+        protected virtual void Awake() {
+            //先获得animator然后由WeaponManger给FPcontroler
+            gunAnimator = GetComponent<Animator>();
+        }
+        protected virtual void Start()
+        {
+            currentAmmo = ammoInMag;
+            currentMaxCarried = maxAmmoCarried;
+            originCameraFOV = eyeCamera.fieldOfView;
+            mouseLook = FindObjectOfType<FPMouseLook>();
+            doAimCoroutine = DoAim();
+            if(isHoldingTrrigger)return;
+        }
+
+        internal void HoldTrigger()
+        {
+            DoAttack();
+            isHoldingTrrigger = true;
+        }
+        internal void ReleseTrigger()
+        {
+            isHoldingTrrigger = false;
+        }
+        internal void ReloadAmmo()
+        {
+            Reload();
+        }
+        /**
+         * @description: 瞄准
+         * @return {*}
+         */        
+        internal void Aiming(bool _isAim)
+        {
+            isAim = _isAim;
+            gunAnimator.SetBool("Aim",isAim);
+            if(doAimCoroutine == null)
+            {
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            }
+            else
+            {
+                StopCoroutine(doAimCoroutine);
+                doAimCoroutine = null;
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            } 
+        }
+        public void DoAttack()
+        {
+            Shooting();//射击
+        }
+        
+        protected abstract void Shooting();
+        protected abstract void Reload();
+        protected abstract void RecoilValue();//后坐力
+        /**
+         * @description: 检测允许射击
+         * @return {*}
+         */        
+        protected bool IsAllowShooting()
+        {
+            return Time.time  - lastFireTime > 1f/fireRate;
+        }
+        /**
+         * @description: 检测停止射击
+         * @return {*}
+         */        
+        protected bool IsStopShooting()
+        {
+            return Time.time - lastFireTime > 3f/(fireRate);//设置停止射击 连续发射三发子弹的时间为停止开火
+        }
+        /**
+         * @description: 瞄准协程
+         * @return {*}
+         */        
+        protected IEnumerator DoAim()
+        {
+            while(true)
+            {
+                yield return null;
+                float tmp_CurrentFov = 0;
+                eyeCamera.fieldOfView = Mathf.SmoothDamp(eyeCamera.fieldOfView,isAim?45:originCameraFOV,ref tmp_CurrentFov,Time.deltaTime*2);
+            }
+        }
+        /**
+         * @description: 装弹动画播放完毕后进行弹夹的替换
+         * @return {*}
+         */        
+        protected IEnumerator CheckReloadAmmoAnimationEnd()
+        {
+            while(true)
+            {
+                yield return null;
+                gunStateInfo = gunAnimator.GetCurrentAnimatorStateInfo(2);
+                if(gunStateInfo.IsTag("ReloadTag"))
+                {
+                    
+                    //和动画里的过度时间对应
+                    if(gunStateInfo.normalizedTime>=0.89f)
+                    {
+                        int tmp_NeedAmmoCount = ammoInMag - currentAmmo;
+                        int tmp_RemainingAmmo = currentMaxCarried - tmp_NeedAmmoCount;
+                        if(tmp_RemainingAmmo <= 0)
+                        {
+                            currentAmmo += currentMaxCarried;
+                            currentMaxCarried = 0;
+                        }
+                        else
+                        {
+                            currentAmmo = ammoInMag;
+                            currentMaxCarried = tmp_RemainingAmmo;
+                        }
+                        yield break;
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+AssualtRifle.cs
+
+```
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+namespace Script.Weapon
+{
+    public class AssualtRifle : Firearms
+    {
+        
+        private float currentRecoilTime;
+        private IEnumerator reloadAmmoCheckerCoroutine;
+  
+        
+        protected override void Awake()
+        {
+            base.Awake();
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+        }
+        /**
+         * @description: 装弹
+         * @return {*}
+         */        
+        protected override void Reload()
+        {   
+            //图层中顺序由上至下0>1>2，设置第2图层的优先级为1
+            gunAnimator.SetLayerWeight(2,1);
+            gunAnimator.SetTrigger(currentAmmo>0?"ReloadLeft":"ReloadOutOf");
+            //当动画播放完
+            //如果直接使用一直按R时会一直进行协程
+            //StartCoroutine(CheckReloadAmmoAnimationEnd());
+            FirearmsReloadAudioSource.clip = currentAmmo>0?fireArmsAudioDate.reloadLeft:fireArmsAudioDate.reloadOutOf;
+            FirearmsReloadAudioSource.Play();
+            if(reloadAmmoCheckerCoroutine == null )
+            {
+            reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+            StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+            else
+            {
+                StopCoroutine(reloadAmmoCheckerCoroutine);//停止协程
+                reloadAmmoCheckerCoroutine = null ;
+                reloadAmmoCheckerCoroutine = CheckReloadAmmoAnimationEnd();
+                StartCoroutine(reloadAmmoCheckerCoroutine);
+            }
+        }
+        /**
+         * @description: 射击
+         * @return {*}
+         */        
+        protected override void Shooting()
+        {
+            if(currentAmmo <= 0)return;
+            if(!IsAllowShooting())return;
+            currentAmmo -= 1;//弹夹减一
+            gunAnimator.Play("Fire",isAim?1:0,0);
+            CreatBullet();//创建子弹时实现子弹偏移
+            //开枪音效
+            FirearmsShootingAudioSource.clip = fireArmsAudioDate.shootingAudio;
+            FirearmsShootingAudioSource.Play();
+            //开枪特效
+            muzzleParticle.Play();
+            casingParticle.Play();
+            if(IsStopShooting()){currentRecoilTime = 0;}//停止射击后currentRecoilTime应该归0 
+            RecoilValue();//后坐力
+            lastFireTime = Time.time;//记录最后一次开枪的时间
+        }
+        /**
+         * @description: 后坐力:视野的移动
+         * @return {*}
+         */   
+        protected override void RecoilValue()
+        {
+            currentRecoilTime += (1f/ammoInMag);
+            float tmp_HorizontalRecoilValue = horizontalRecoilAnimationCurve.Evaluate(currentRecoilTime);
+            float tmp_VerticalRecoilValue = verticalRecoilAnimationCurve.Evaluate(currentRecoilTime);
+            mouseLook.SetRecoilCamera(tmp_HorizontalRecoilValue,tmp_VerticalRecoilValue);//后坐力
+        }
+        /**
+         * @description: 创建子弹的飞行速度
+         * @return {*}
+         */        
+        protected void  CreatBullet()
+        {
+            GameObject tmp_Bullet =  Instantiate(bulletPrefab,muzzlePonit.position,muzzlePonit.rotation);
+            tmp_Bullet.transform.eulerAngles += CalculateSpreadOffset();
+            var tmp_BulletScript = tmp_Bullet.AddComponent<Bullet>();
+            tmp_BulletScript.tmp_DestroyBullet = tmp_Bullet;
+            tmp_BulletScript.shootImpactAudioData = shootImpactAudioData;
+            tmp_BulletScript.impactPrefab = bulletImpactPrefabe;//该枪射击弹坑
+            tmp_BulletScript.bulletSpeed = 19f;//该枪子弹速度 
+        }
+
+        /**
+         * @description: 子弹散射：枪口的偏移
+         * @return {*}
+         */        
+        protected Vector3 CalculateSpreadOffset()
+        {
+           float tmp_SpreadAngle = spreadAngle/eyeCamera.fieldOfView;
+           return tmp_SpreadAngle*UnityEngine.Random.insideUnitCircle;
+        }
+    }
+}
+```
+
+WeaponManger.cs
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Script.Weapon;
+using Script.Items;
+
+public class WeaponManger : MonoBehaviour
+{
+    public Firearms mainWeapon;
+    public Firearms secondaryWeapon;
+    private Firearms carriedWeapon;
+    private IEnumerator waitingForHolsterEndCoroutinue;
+    public Transform worldCameraTransform;
+    public float maxRaycastDistance;
+    public LayerMask checkItemLayerMask;
+
+    [SerializeField] private FPControler fPControler;
+    
+    public List<Firearms> arms = new List<Firearms>();
+    private void Awake()
+    {
+
+    }
+
+    private void Start()
+    {
+        carriedWeapon = mainWeapon;
+        if(carriedWeapon)
+        {
+            fPControler = FindObjectOfType<FPControler>();
+            fPControler.SetupAnimator(carriedWeapon.gunAnimator);
+        }else
+        Debug.Log("carriedweapon is null");
+    }
+    private void Update()
+    {
+        CheckedItem();
+        if(carriedWeapon == null)return;
+        SwapWeapon();
+        if(Input.GetMouseButton(0))
+        {
+            // DoAttack();
+            carriedWeapon.HoldTrigger();
+        }  
+        if(Input.GetMouseButtonUp(0))
+        {
+            // DoAttack();
+            carriedWeapon.ReleseTrigger();
+        }  
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            // Reload();
+            carriedWeapon.ReloadAmmo();
+        }
+        if(Input.GetMouseButtonDown(1))
+        {
+            // isAim=true;
+            // Aim();
+            carriedWeapon.Aiming(true);
+        }
+        if(Input.GetMouseButtonUp(1))
+        {
+            // isAim=false;
+            // Aim();
+            carriedWeapon.Aiming(false);
+        }
+    }
+    private void SwapWeapon()
+    {
+        if(Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            if(mainWeapon == null )return;
+            if(carriedWeapon == mainWeapon) return;
+            if(carriedWeapon.gameObject.activeInHierarchy)
+            {
+                StartWaitingForHolsterEndCoroutinue();
+                carriedWeapon.gunAnimator.SetTrigger("Holster");
+            }
+            else
+            {
+                SetCarriedWeapon(mainWeapon);
+                fPControler.SetupAnimator(mainWeapon.gunAnimator);
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            if(secondaryWeapon == null )return;
+            if(carriedWeapon == secondaryWeapon) return;
+            if(carriedWeapon.gameObject.activeInHierarchy)
+            {
+                StartWaitingForHolsterEndCoroutinue();
+                carriedWeapon.gunAnimator.SetTrigger("Holster");
+            }
+            else
+            {
+                SetCarriedWeapon(secondaryWeapon);
+                fPControler.SetupAnimator(secondaryWeapon.gunAnimator);
+            }
+        }
+    }
+    private void StartWaitingForHolsterEndCoroutinue()
+    {
+        if(waitingForHolsterEndCoroutinue==null)
+        {
+            waitingForHolsterEndCoroutinue = WaitingForHolster();
+            StartCoroutine(waitingForHolsterEndCoroutinue);
+        }
+    }
+    private IEnumerator WaitingForHolster()
+    {
+        while(true)
+        {
+            AnimatorStateInfo tmp_AnimatorStateInfo = carriedWeapon.gunAnimator.GetCurrentAnimatorStateInfo(0);
+            if(tmp_AnimatorStateInfo.IsTag("holster"))
+            {
+                if(tmp_AnimatorStateInfo.normalizedTime>0.9f)
+                {
+                    var tmp_TargetWeapon = carriedWeapon == mainWeapon?secondaryWeapon:mainWeapon;
+                    SetCarriedWeapon(tmp_TargetWeapon);
+                    waitingForHolsterEndCoroutinue = null;//清空之后下次执行生效
+                    yield break;
+                }
+            }
+            yield return null;
+        }
+    }
+    private void CheckedItem()
+    {
+        bool tmp_IsItem = Physics.Raycast(worldCameraTransform.position,worldCameraTransform.forward,
+            out RaycastHit tmp_Hit,maxRaycastDistance,checkItemLayerMask);
+        if(tmp_IsItem)
+        {   
+            if(Input.GetKeyDown(KeyCode.E))
+            {
+                bool tmp_HasItem = tmp_Hit.collider.TryGetComponent(out BaseItem tmp_BaseItem);
+                if(tmp_HasItem)
+                {
+                    if(tmp_BaseItem is FirearmsItem tmp_FirearmsItem)
+                    {
+                        foreach (Firearms tmp_Arm in arms)
+                        {
+                            if(tmp_FirearmsItem.armsName.CompareTo(tmp_Arm.name) == 0)
+                            {   
+                                switch(tmp_FirearmsItem.currentFirearmsType)
+                                {
+                                    case FirearmsItem.firearmsType.assultRefile:
+                                    mainWeapon = tmp_Arm;
+                                    break;
+                                    case FirearmsItem.firearmsType.handGun:
+                                    secondaryWeapon = tmp_Arm;
+                                    break;
+                                    case FirearmsItem.firearmsType.knife:
+                                    //mainWeapon = tmp_Arm;
+                                    break;
+                                }
+                                SetCarriedWeapon(tmp_Arm);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //FIXME 切换武器时应该取消瞄准
+    public void SetCarriedWeapon(Firearms _targetWeapon)
+    {
+        if(carriedWeapon)carriedWeapon.gameObject.SetActive(false);
+        carriedWeapon = _targetWeapon;
+        carriedWeapon.gameObject.SetActive(true);
+        fPControler.SetupAnimator(_targetWeapon.gunAnimator);
+    }
+}
+
+```
+
+FPControler.cs
+
+```
+using System.Collections;
+
+using System.Collections.Generic;
+
+using UnityEngine;
+
+
+
+public class FPControler : MonoBehaviour
+
+{
+  [SerializeField]private Animator characterAnimator;
+  private Transform characterTransform;
+  private Vector3 movementDirection;
+  private CharacterController characterController;
+
+  public float speed = 3.0f;
+
+  public float walkSpeed = 1.7f;
+
+  public float gravity  = 9.8f;
+
+  public float jumpHeight = 3.0f;
+
+  public float crouchHeight = 1.0f;
+
+  public float smoothTime = 5;
+
+  private float originHeight;
+
+  private bool isCrouched = false;
+  private float velocity;
+
+  private float tmp_CurrentSpeed = 1.7f;
+  //获取组件
+
+  private void Awake() {
+
+    characterTransform = GetComponent<Transform>();
+
+    characterController = GetComponent<CharacterController>();
+
+  }
+  private void Start() 
+  {
+    originHeight = characterController.height;
+  }
+
+
+  private void Update() 
+  {
+    Vector3 tmp_SubXVelocity ;
+    if(characterController.isGrounded)
+    {
+        //在地上时可以跳跃与静步
+        var tmp_Horizontal = Input.GetAxis("Horizontal");
+        var tmp_Vertical = Input.GetAxis("Vertical");
+        //当前要移动的方向
+        movementDirection = characterTransform.TransformDirection(new Vector3(tmp_Horizontal,0,tmp_Vertical));
+        //跳跃
+        if(Input.GetButtonDown("Jump"))
+        {
+          movementDirection.y = jumpHeight;
+        }
+        //静步 蹲下时速度都会变化
+        // if(Input.GetKey(KeyCode.LeftShift))
+        // {
+        //   tmp_CurrentSpeed = walkSpeed;
+        // }
+        // else
+        // {
+        //   tmp_CurrentSpeed = speed;
+        // }
+        tmp_CurrentSpeed =  Input.GetKey(KeyCode.LeftShift)||isCrouched?walkSpeed:speed;
+    }
+  //蹲下与站起
+  Crouch_tip();
+  movementDirection.y -= gravity*Time.deltaTime;
+  //Move不实现重力
+  characterController.Move(tmp_CurrentSpeed * Time.deltaTime*movementDirection);  
+  tmp_SubXVelocity = characterController.velocity;
+  tmp_SubXVelocity.y = 0;
+  velocity = tmp_SubXVelocity.magnitude;
+  if(characterAnimator == null )return ;
+  characterAnimator.SetFloat("Velocity",velocity);
+  //SimpleMove实现重力
+  //characterController.SimpleMove(speed*Time.deltaTime*tmp_MovementDirection);
+  }
+
+  private void Crouch_tip()
+  {
+
+    if(Input.GetKeyDown(KeyCode.LeftControl))
+
+    {
+    //协程函数，用于从2过渡到到1
+    float tmp_TargetHeight = isCrouched?originHeight:crouchHeight;
+    StartCoroutine(DoCrouch(tmp_TargetHeight));
+    isCrouched = !isCrouched;
+    }
+
+  }
+
+  private IEnumerator DoCrouch(float targetHeight){
+  float tmp_CurrentHeight= 0;
+    while(Mathf.Abs(characterController.height - targetHeight)>0.1f)
+    {
+      yield return null;
+      characterController.height = 
+        Mathf.SmoothDamp(characterController.height,targetHeight,
+          ref tmp_CurrentHeight,Time.deltaTime*smoothTime);
+    }
+  }
+  public void SetupAnimator(Animator _animator)
+  {
+    characterAnimator = _animator;
+  }
+}
+```
+
+BaseItem.cs
+
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Items
+{
+    public abstract class BaseItem : MonoBehaviour
+    {
+        public enum itemType
+        {
+            firearms,
+            knife,
+            missile,
+            accessories,
+            others
+        }
+        public itemType currentItemType;
+        public int itemId;
+    }
+}
+```
+
+FirearmsItem.cs
+
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Items
+{
+    public class FirearmsItem : BaseItem
+    {
+        public enum firearmsType
+        {
+            assultRefile,
+            handGun,
+			others
+        }
+        public firearmsType currentFirearmsType;
+        public string armsName;
+    }
+}
+```
+
+![](../../image/Snipaste_2023-04-18_19-44-48.png)
+
+桌子上的物品挂载相应脚本
