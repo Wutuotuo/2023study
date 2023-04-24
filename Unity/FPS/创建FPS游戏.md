@@ -3338,3 +3338,286 @@ namespace Script.Items
 ![](../../image/Snipaste_2023-04-18_19-44-48.png)
 
 桌子上的物品挂载相应脚本
+
+WeaponManger.cs
+
+```c#
+    /**
+     * @description: 拾取武器
+     * @return {*}
+     */
+    }
+    private void PickUpWeapon(BaseItem _BaseItem)
+    {
+        if(_BaseItem is FirearmsItem tmp_FirearmsItem)
+            {
+                foreach (Firearms tmp_Arm in arms)
+                {
+                    if(tmp_FirearmsItem.itemName.CompareTo(tmp_Arm.name) != 0 )continue;
+                    {   
+                        switch(tmp_FirearmsItem.currentFirearmsType)
+                        {
+                            case FirearmsItem.firearmsType.assultRefile:
+                            mainWeapon = tmp_Arm;
+                            break;
+                            case FirearmsItem.firearmsType.handGun:
+                            secondaryWeapon = tmp_Arm;
+                            break;
+                        }
+                        SetCarriedWeapon(tmp_Arm);
+                    }
+                }
+            }
+    }
+```
+
+## 十一、武器控制-切换配件
+
+#### 1.编写脚本
+
+Firearms.cs
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+namespace Script.Weapon
+{
+    //枪类
+    public abstract class Firearms : MonoBehaviour,IWeapon
+    {
+        public Transform muzzlePonit;//枪口位置
+        public Transform casingPoint;//蛋壳抛出位置
+        public Camera eyeCamera;//倍镜
+        public Camera gunCamera;
+
+        public AudioSource FirearmsReloadAudioSource;//装弹音效
+        public AudioSource FirearmsShootingAudioSource;//射击音效
+        public FireArmsAudioDate fireArmsAudioDate;//音源数据
+
+        public ParticleSystem muzzleParticle;//枪口火焰粒子
+        public ParticleSystem casingParticle;//蛋壳抛出粒子
+        public ShootImpactAudioData shootImpactAudioData;//子弹碰撞音效
+        
+        public int ammoInMag = 30;//弹夹
+        public float fireRate;//射速 一秒射出的子弹
+        public int maxAmmoCarried = 120;//总弹夹
+        public GameObject bulletPrefab;//子弹
+        public GameObject bulletImpactPrefabe;//子弹碰撞
+        public float spreadAngle = 70;//子弹散射
+        public AnimationCurve horizontalRecoilAnimationCurve;//水平后坐力曲线
+        public AnimationCurve verticalRecoilAnimationCurve;//垂直后坐力曲线
+        public List<ScopeInfo> scopeInfoes = new List<ScopeInfo>();
+        public ScopeInfo baseIronSight;
+        protected ScopeInfo rigoutScopeInfo;//当前装备的倍镜
+        protected float eyeOriginFOV;
+        protected float gunOringinFOV;
+        protected Transform gunCameraTransform;
+        private Vector3 originalEyePosition;
+        internal Animator gunAnimator;//射击动画
+        
+
+
+        protected float originCameraFOV;//初始的视野
+        protected int currentAmmo;
+        protected int currentMaxCarried;
+        protected float lastFireTime;
+        protected bool isAim = false;
+        protected AnimatorStateInfo gunStateInfo;//动画的播放状态
+        protected bool isshooting;
+        protected FPMouseLook mouseLook;
+        private IEnumerator doAimCoroutine;
+        private bool isHoldingTrrigger;
+
+        protected virtual void Awake() {
+            //先获得animator然后由WeaponManger给FPcontroler
+            gunAnimator = GetComponent<Animator>();
+            eyeOriginFOV = eyeCamera.fieldOfView;
+            gunOringinFOV = gunCamera.fieldOfView;
+            gunCameraTransform =gunCamera.transform;
+            originalEyePosition = gunCameraTransform.localPosition;
+            rigoutScopeInfo = baseIronSight;
+        }
+        protected virtual void Start()
+        {
+            currentAmmo = ammoInMag;
+            currentMaxCarried = maxAmmoCarried;
+            mouseLook = FindObjectOfType<FPMouseLook>();
+            doAimCoroutine = DoAim();
+            if(isHoldingTrrigger)return;
+        }
+
+        internal void HoldTrigger()
+        {
+            DoAttack();
+            isHoldingTrrigger = true;
+        }
+        internal void ReleseTrigger()
+        {
+            isHoldingTrrigger = false;
+        }
+        internal void ReloadAmmo()
+        {
+            Reload();
+        }
+        /**
+         * @description: 瞄准
+         * @return {*}
+         */        
+        internal void Aiming(bool _isAim)
+        {
+            isAim = _isAim;
+            gunAnimator.SetBool("Aim",isAim);
+            if(doAimCoroutine == null)
+            {
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            }
+            else
+            {
+                StopCoroutine(doAimCoroutine);
+                doAimCoroutine = null;
+                doAimCoroutine = DoAim();
+                StartCoroutine(doAimCoroutine);
+            } 
+        }
+        public void DoAttack()
+        {
+            Shooting();//射击
+        }
+        
+        protected abstract void Shooting();
+        protected abstract void Reload();
+        protected abstract void RecoilValue();//后坐力
+        /**
+         * @description: 检测允许射击
+         * @return {*}
+         */        
+        protected bool IsAllowShooting()
+        {
+            return Time.time  - lastFireTime > 1f/fireRate;
+        }
+        /**
+         * @description: 检测停止射击
+         * @return {*}
+         */        
+        protected bool IsStopShooting()
+        {
+            return Time.time - lastFireTime > 3f/(fireRate);//设置停止射击 连续发射三发子弹的时间为停止开火
+        }
+        /**
+         * @description: 瞄准协程
+         * @return {*}
+         */        
+        protected IEnumerator DoAim()
+        {
+            while(true)
+            {
+                yield return null;
+                float tmp_EyeCurrentFov = 0;
+                eyeCamera.fieldOfView = Mathf.SmoothDamp(eyeCamera.fieldOfView,isAim?rigoutScopeInfo.eyeFov:eyeOriginFOV,
+                ref tmp_EyeCurrentFov,
+                Time.deltaTime*2);
+                float tmp_GunCurrentFov = 0;
+                gunCamera.fieldOfView = Mathf.SmoothDamp(gunCamera.fieldOfView,isAim?rigoutScopeInfo.eyeFov:eyeOriginFOV,
+                ref tmp_GunCurrentFov,
+                Time.deltaTime*2);
+                Vector3 tmp_RefPosition = Vector3.zero;
+                gunCameraTransform.localPosition = Vector3.SmoothDamp(gunCameraTransform.localPosition,
+                isAim?rigoutScopeInfo.gunCameraPosition:originalEyePosition,
+                ref tmp_RefPosition,
+                Time.deltaTime * 2);
+            }
+        }
+        /**
+         * @description: 装弹动画播放完毕后进行弹夹的替换
+         * @return {*}
+         */        
+        protected IEnumerator CheckReloadAmmoAnimationEnd()
+        {
+            while(true)
+            {
+                yield return null;
+                gunStateInfo = gunAnimator.GetCurrentAnimatorStateInfo(2);
+                if(gunStateInfo.IsTag("ReloadTag"))
+                {
+                    
+                    //和动画里的过度时间对应
+                    if(gunStateInfo.normalizedTime>=0.89f)
+                    {
+                        int tmp_NeedAmmoCount = ammoInMag - currentAmmo;
+                        int tmp_RemainingAmmo = currentMaxCarried - tmp_NeedAmmoCount;
+                        if(tmp_RemainingAmmo <= 0)
+                        {
+                            currentAmmo += currentMaxCarried;
+                            currentMaxCarried = 0;
+                        }
+                        else
+                        {
+                            currentAmmo = ammoInMag;
+                            currentMaxCarried = tmp_RemainingAmmo;
+                        }
+                        yield break;
+                    }
+                }
+            }
+        }
+        internal void SetupCarriedScope(ScopeInfo _scopeinfo)
+        {
+            
+            rigoutScopeInfo = _scopeinfo;
+            //机瞄设置为False
+            if(!baseIronSight.scopeGameObject.activeSelf)return;
+            baseIronSight.scopeGameObject.SetActive(false);
+        }
+        
+    }
+    [System.Serializable]
+    public class ScopeInfo
+    {
+        public string scopName;
+        public GameObject scopeGameObject;
+        public float eyeFov;
+        public float gunFov;
+        public Vector3 gunCameraPosition;
+    }
+    //todo 消音
+}
+```
+
+WeaponManger.cs
+
+```
+    /* @description: 拾取配件
+     * @return {*}
+     */
+    private void PickUpAssessories(BaseItem _BaseItem)
+    {
+        if(!(_BaseItem is Accessories tmp_AccessoriesItem))return;
+        
+        switch(tmp_AccessoriesItem.currentAccessoriesType)
+        {
+            case Accessories.AccessoriesType.Scope:
+            foreach (ScopeInfo tmp_ScopeInfo in carriedWeapon.scopeInfoes)
+            {
+                if( tmp_ScopeInfo.scopName.CompareTo(tmp_AccessoriesItem.itemName) !=0 )
+                {
+                tmp_ScopeInfo.scopeGameObject.SetActive(false);
+                continue;
+                }
+                tmp_ScopeInfo.scopeGameObject.SetActive(true);
+                carriedWeapon.SetupCarriedScope(tmp_ScopeInfo);
+            }
+            
+            break;
+            case Accessories.AccessoriesType.others:
+            break;
+        }
+    }
+```
+
+![](../../image/Snipaste_2023-04-24_14-53-23.png)
+
+## 十二、UI-准星
+
+#### 1.编写脚本
