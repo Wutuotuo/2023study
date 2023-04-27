@@ -789,15 +789,478 @@ namespace System
 
 ### 1.复杂数据类型
 
+- 枚举
 
+  枚举是一组命名整型常量。枚举类型是使用 **enum** 关键字声明的。
+
+  C# 枚举是值类型。换句话说，枚举包含自己的值，且不能继承或传递继承。
+
+  ```c#
+  enum <enum_name>
+  { 
+      enumeration list 
+  };
+  ```
+
+  其中，
+
+  - *enum_name* 指定枚举的类型名称。
+  - *enumeration list* 是一个用逗号分隔的标识符列表。
+
+  枚举列表中的每个符号代表一个整数值，一个比它前面的符号大的整数值。默认情况下，第一个枚举符号的值是 0.例如：
+
+  ```c#
+  enum Days { Sun, Mon, tue, Wed, thu, Fri, Sat };
+  ```
+
+- 数组
+
+  数组是一个存储相同类型元素的固定大小的顺序集合。数组是用来存储数据的集合，通常认为数组是一个同一类型变量的集合。
+
+  声明数组变量并不是声明 number0、number1、...、number99 一个个单独的变量，而是声明一个就像 numbers  这样的变量，然后使用 numbers[0]、numbers[1]、...、numbers[99]  来表示一个个单独的变量。数组中某个指定的元素是通过索引来访问的。
+
+  所有的数组都是由连续的内存位置组成的。最低的地址对应第一个元素，最高的地址对应最后一个元素。
+
+  ```c#
+  datatype[] arrayName;
+  ```
+
+  其中，
+
+  - *datatype* 用于指定被存储在数组中的元素的类型。
+  - *[ ]* 指定数组的秩（维度）。秩指定数组的大小。
+  - *arrayName* 指定数组的名称。
+
+  例如：
+
+  ```c#
+  double[] balance;
+  ```
+
+  初始化数组
+
+  声明一个数组不会在内存中初始化数组。当初始化数组变量时，您可以赋值给数组。
+
+  数组是一个引用类型，所以您需要使用 new 关键字来创建数组的实例。
+
+  例如：
+
+  ```c#
+  double[] balance = new double[10];//声明数组
+  balance[0] = 4500.0;//数组赋值
+  double[] balance = { 2340.0, 4523.69, 3421.0};//声明数组的同时给数组赋值
+  int [] marks = new int[5]  { 99,  98, 92, 97, 95};//创建并初始化一个数组
+  int [] marks = new int[]  { 99,  98, 92, 97, 95};//也可以省略数组的大小
+  //您也可以赋值一个数组变量到另一个目标数组变量中。在这种情况下，目标和源会指向相同的内存位置：
+  int [] marks = new int[]  { 99,  98, 92, 97, 95};
+  int[] score = marks;
+  ```
+
+  >  当您创建一个数组时，C# 编译器会根据数组类型隐式初始化每个数组元素为一个默认值。例如，int 数组的所有元素都会被初始化为 0。
+
+  多维数组
+
+  C# 支持多维数组。多维数组又称为矩形数组。
+
+  例如
+
+  ```c#
+  string [,] names;//声明一个 string 变量的二维数组
+  int [ , , ] m;//声明一个 int 变量的三维数组
+  
+  int [,] a = new int [3,4] {
+   {0, 1, 2, 3} ,   /*  初始化索引号为 0 的行 */
+   {4, 5, 6, 7} ,   /*  初始化索引号为 1 的行 */
+   {8, 9, 10, 11}   /*  初始化索引号为 2 的行 */
+  };
+  ```
+
+  交错数组
+
+  交错数组是数组的数组，同时也是一维数组。
+
+  例如
+
+  ```c#
+  int[][] scores = new int[5][];
+  for (int i = 0; i < scores.Length; i++) //声明交错数组
+  {
+     scores[i] = new int[4];
+  }
+  int[][] scores = new int[2][]{new int[]{92,93,94},new int[]{85,66,87,88}};//初始化
+  //其中，scores 是一个由两个整型数组组成的数组 -- scores[0] 是一个带有 3 个整数的数组，scores[1] 是一个带有 4 个整数的数组。
+  ```
+
+- 结构体
+
+  在 C# 中，结构体是值类型数据结构。它使得一个单一变量可以存储各种数据类型的相关数据。**struct** 关键字用于创建结构体。
+
+  结构体是用来代表一个记录。假设您想跟踪图书馆中书的动态。您可能想跟踪每本书的以下属性：
+
+  - Title
+  - Author
+  - Subject
+  - Book ID
+
+定义结构体 
+
+```c#
+struct Books
+{
+   public string title;
+   public string author;
+   public string subject;
+   public int book_id;
+};  
+```
+
+用法
+
+```c#
+using System;
+using System.Text;
+     
+struct Books
+{
+   public string title;
+   public string author;
+   public string subject;
+   public int book_id;
+};  
+
+public class testStructure
+{
+   public static void Main(string[] args)
+   {
+
+      Books Book1;        /* 声明 Book1，类型为 Books */
+      Books Book2;        /* 声明 Book2，类型为 Books */
+
+      /* book 1 详述 */
+      Book1.title = "C Programming";
+      Book1.author = "Nuha Ali";
+      Book1.subject = "C Programming Tutorial";
+      Book1.book_id = 6495407;
+
+      /* book 2 详述 */
+      Book2.title = "Telecom Billing";
+      Book2.author = "Zara Ali";
+      Book2.subject =  "Telecom Billing Tutorial";
+      Book2.book_id = 6495700;
+
+      /* 打印 Book1 信息 */
+      Console.WriteLine( "Book 1 title : {0}", Book1.title);
+      Console.WriteLine("Book 1 author : {0}", Book1.author);
+      Console.WriteLine("Book 1 subject : {0}", Book1.subject);
+      Console.WriteLine("Book 1 book_id :{0}", Book1.book_id);
+
+      /* 打印 Book2 信息 */
+      Console.WriteLine("Book 2 title : {0}", Book2.title);
+      Console.WriteLine("Book 2 author : {0}", Book2.author);
+      Console.WriteLine("Book 2 subject : {0}", Book2.subject);
+      Console.WriteLine("Book 2 book_id : {0}", Book2.book_id);      
+
+      Console.ReadKey();
+
+   }
+}
+```
+
+特点
+
+在 C# 中的结构与传统的 C 或 C++ 中的结构不同。C# 中的结构有以下特点：
+
+- 结构可带有方法、字段、索引、属性、运算符方法和事件。
+
+- 结构可定义构造函数，但不能定义析构函数。但是，您不能为结构定义无参构造函数。无参构造函数(默认)是自动定义的，且不能被改变。
+
+- 与类不同，结构不能继承其他的结构或类。
+
+- 结构不能作为其他结构或类的基础结构。
+
+- 结构可实现一个或多个接口。
+
+- 结构成员不能指定为 abstract、virtual 或 protected。
+
+- 当您使用 **New** 操作符创建一个结构对象时，会调用适当的构造函数来创建结构。与类不同，结构可以不使用 New 操作符即可被实例化。
+
+- 如果不使用 New 操作符，只有在所有的字段都被初始化之后，字段才被赋值，对象才被使用。
+
+  > tip:
+  >
+  > 类和结构有以下几个基本的不同点：
+  >
+  > - 结构是值类型，类是引用类型。
+  > - 结构不支持继承。
+  > - 结构不能声明默认的构造函数。
+  > - 结构体中声明的字段无法赋予初值，类可以:
+  > - 结构体的构造函数中，必须为结构体所有字段赋值，类的构造函数无此限制:
+  > - 结构是值类型，它在栈中分配空间；而类是引用类型，它在堆中分配空间，栈中保存的只是引用。
 
 ### 2.数值型和引用类型
 
+引用类型：string，数组，类
+
+值类型：其他
+
+- 区别
+
+  ```c#
+  int a = 10;
+  int b = a;
+  int [] arr1 = new int[4]  {1,2,3,4};
+  int [] arr2 = arr1;
+  Console.WriteLine("a={0},b={1}",a,b);
+  //输出a=10,b=10
+  Console.WriteLine("arr1[0]={0},arr2[0]={1}",arr1[0],arr2[0]);
+  //输出arr[0]=1,arr2[0]=1;
+  b = 5;
+  arr2[0] = 5;
+  Console.WriteLine("a={0},b={1}",a,b);
+  //输出a=10,b=5
+  Console.WriteLine("arr1[0]={0},arr2[0]={1}",arr1[0],arr2[0]);
+  //输出arr[0]=5,arr2[0]=5;
+  ```
+
+  不难发现，值类型在相互赋值时，把内容拷贝给了对方，而引用类型的相互赋值时，是让两者指向同一个值 
+
+  原因为存储方式不同，值类型存储在栈（系统分配比较小但是快），引用类型存储在堆上（手动申请和释放，大而慢）
+
+  ![](../image/Snipaste_2023-04-27_12-22-58.png)
+
+特殊的引用类型string
+
+​	因为C#对字符串的特殊处理使它具有值类型的特点，当重新赋值时会在堆上重新分配空间
+
+​	![](../image/Snipaste_2023-04-27_12-32-33.png)
+
+> **注意：**string虽然方便，但频繁重新赋值时，会产生内存垃圾
+
 ### 3.函数
 
-### 4. 结构体
+- 函数基础
 
-### 5. 初级排序
+  ```c#
+  <Access Specifier> <Return Type> <Method Name>(Parameter List)
+  {
+     Method Body
+  }
+  ```
+
+  下面是方法的各个元素：
+
+  - **Access Specifier**：访问修饰符，这个决定了变量或方法对于另一个类的可见性。
+  - **Return type**：返回类型，一个方法可以返回一个值。返回类型是方法返回的值的数据类型。如果方法不返回任何值，则返回类型为 **void**。
+  - **Method name**：方法名称，是一个唯一的标识符，且是大小写敏感的。它不能与类中声明的其他标识符相同。
+  - **Parameter list**：参数列表，使用圆括号括起来，该参数是用来传递和接收方法的数据。参数列表是指方法的参数类型、顺序和数量。参数是可选的，也就是说，一个方法可能不包含参数。
+  - **Method body**：方法主体，包含了完成任务所需的指令集。
+
+- ref和out
+
+  在C#中通过使用方法来获取返回值时，通常只能得到一个返回值。因此，**当一个方法需要返回多个值的时候，就需要用到ref和out**，
+
+  **同时也可以在函数内部，改变传入的参数的值**。
+
+  若要使用 ref 和out参数，则方法定义和调用方法都必须显式使用 ref和out 关键字。在方法中对参数的设置和改变将会直接影响函数调用之处(参数的初始值）。
+
+  > ref指定的参数在 **函数调用前必须初始化**，在内部可改可不改
+  >
+  > out指定的参数在不用初始化，**但在函数内部（即方法中）赋初值。**
+
+  正确使用ref：
+
+  ```c#
+  class Program
+      {
+          static void Main(string[] args)
+          {
+              int x = 10;
+              int y = 20;
+              GetValue(ref x, ref  y);
+              Console.WriteLine("x={0},y={1}", x, y);//输出x=333,y=444
+              Console.ReadLine();
+          }
+          public void GetValue(ref int x, ref int y)
+          {
+              x = 333;
+              y = 444;
+          }
+      }
+  ```
+
+  错误使用ref:
+
+  ```
+  class Program
+      {
+          static void Main(string[] args)
+          {
+              int x ;//未进行初始化，报错
+              int y ;//未进行初始化，报错
+              GetValue(ref x, ref  y);
+              Console.WriteLine("x={0},y={1}", x, y);
+              Console.ReadLine();
+          }
+          public void GetValue(ref int x, ref int y)
+          {
+              x = 333;
+              y = 444;
+          }
+      }
+  ```
+
+  > 总结：使用ref 必须在 **调用方法前** 对其进行**初识化操作**
+
+  正确使用out：
+
+  ```
+  class Program
+  {
+      static void Main(string[] args)
+      {
+          int x = 10;
+          int y = 233;
+          Swap(out x, out y);
+          Console.WriteLine("x={0},y={1}", x, y);//输出x=333,y=444
+          Console.ReadLine();
+      }
+  
+      public static void Swap(out int a, out int b)
+      {
+          a = 333;   //对a,b 在方法内进行了初识化，不会报错
+          b = 444;
+      }
+  }
+  ```
+
+  错误使用out:
+
+  ```
+  class Program
+  {
+      static void Main(string[] args)
+      {
+          int x = 10;
+          int y = 233;
+          Swap(out x, out y);
+          Console.WriteLine("x={0},y={1}", x, y);
+          Console.ReadLine();
+      }
+  
+      public static void Swap(out int a, out int b)
+      {
+      	int tmp = a;
+          a = b;   //a,b在函数内部没有赋初值，则出现错误。
+          b = tmp;
+      }
+  }
+  ```
+
+  > 总结：out 的使用必须要在 **方法内** 进行 **初始化** ，才不会报错
+
+- 变长参数和参数默认值
+
+  比如要计算n个整数的和
+
+  ```c#
+  int SumInt(int a,int b, ......)//如果有n个参数就无法实现了
+  ```
+
+  变长参数关键字params
+
+  ```c#
+  int SumInt(params int[] arr)
+  {
+     	int sum;
+  	foreach(int i in arr)
+      {
+          sum +=i;
+      }
+      return sum;
+  }
+  ```
+
+  > params 关键字后面必为数组，数组的类型可以使任意类型，函数参数中最多出现一个params参数且在最后出现，前面可以有n个其他参数。
+
+  参数默认值
+
+  ​	如果在函数的参数处给形参赋值，则不输入实参时，默认为形参的值。
+
+- 函数重载
+
+  ​	和函数类型无关，名字相同，参数数量不同或者参数类型或顺序不同，命名一组功能相似的函数，减少函数名的数量，避免命名控件的污染，同时提升程序的可读性。
+
+  > ref和out，params可以算作重载 ，ref和out不能同时重载，可选参数不算重载
+
+- 递归函数
+
+  让函数自己调用自己
+
+  1.必须有结束调用的条件
+
+  2.必须能够达到结束的目的
+
+### 4. 初级排序
+
+- 冒泡排序
+
+  冒泡排序是比较基础的排序算法之一，其思想是相邻的元素两两比较，较大的数下沉，较小的数冒起来，这样一趟比较下来，最大(小)值就会排列在一端。整个过程如同气泡冒起，因此被称作冒泡排序。
+   冒泡排序的步骤是比较固定的：
+   1>比较相邻的元素。如果第一个比第二个大，就交换他们两个。
+   2>每趟从第一对相邻元素开始，对每一对相邻元素作同样的工作，直到最后一对。
+   3>针对所有的元素重复以上的步骤，除了已排序过的元素(每趟排序后的最后一个元素)，直到没有任何一对数字需要比较。
+
+  ```c#
+  using System;
+  using System.Threading;
+   
+  namespace BubbleSort
+  {
+      class Program
+      {
+          static void Main(string[] args)
+          {
+              
+              int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
+  
+              Console.WriteLine("排序前的数组：");
+              foreach (int item in arr)
+              {
+                  Console.Write(item + ",");
+              }
+              Console.WriteLine();
+              BubbleSort(arr);
+              Console.WriteLine("排序后的数组：");
+              foreach (int item in arr)
+              {
+                  Console.Write(item+",");
+              }
+              Console.WriteLine();
+              Console.ReadKey();
+          }
+          static void BubbleSort(int[] arr)
+          {
+          	int temp = 0;
+              for (int i = 0; i < arr.Length - 1; i++)
+              {
+                  for (int j = 0; j < arr.Length - 1 - i; j++)
+                  {
+                      if (arr[j] > arr[j + 1])
+                      {
+                          temp = arr[j + 1];
+                          arr[j + 1] = arr[j];
+                          arr[j] = temp;
+                      }
+                  }
+              }
+          }
+      }
+  }
+  ```
+
+  外循环中，N个数比较N-1次，每一次循环产生一个最大数排到最后面，因此内循环中比较N-1-i次
+
+  i为最大数的数量。
 
 ## 二、实践项目
 
