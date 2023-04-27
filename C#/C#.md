@@ -1,5 +1,4 @@
 #  C#入门
-## 一、语法知识
 
 ### 1.程序语言是什么
 
@@ -785,8 +784,6 @@ namespace System
 
 # C#基础
 
-## 一、语法知识
-
 ### 1.复杂数据类型
 
 - 枚举
@@ -1214,7 +1211,7 @@ public class testStructure
   using System;
   using System.Threading;
    
-  namespace BubbleSort
+  namespace Sort
   {
       class Program
       {
@@ -1222,7 +1219,6 @@ public class testStructure
           {
               
               int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
-  
               Console.WriteLine("排序前的数组：");
               foreach (int item in arr)
               {
@@ -1257,36 +1253,160 @@ public class testStructure
       }
   }
   ```
+  
+  每一次循环产生一个最大数排到最后面，因此内循环中比较N-1-i次
+  
+  i为最大数的数量，外循环是N-1剩出来最右边的最大数
+  
+- 选择排序
 
-  外循环中，N个数比较N-1次，每一次循环产生一个最大数排到最后面，因此内循环中比较N-1-i次
+  选择排序是寻找当前数组中的最小元素/最大元素，然后将他们放到最前边/最后边的位置上去，然后以此类推，在剩余的数组中再次寻找，直到全部待排序的数据元素的个数为零。
 
-  i为最大数的数量。
+  ```c#
+  using System;
+  using System.Threading;
+   
+  namespace Sort
+  {
+      class Program
+      {
+          static void Main(string[] args)
+          {
+              
+              int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
+              Console.WriteLine("排序前的数组：");
+              foreach (int item in arr)
+              {
+                  Console.Write(item + ",");
+              }
+              Console.WriteLine();
+              SelectionSort(arr);
+              Console.WriteLine("排序后的数组：");
+              foreach (int item in arr)
+              {
+                  Console.Write(item+",");
+              }
+              Console.WriteLine();
+              Console.ReadKey();
+          }
+          static void SelectionSort(int[] arr)
+          {
+              for (int i = 0; i < arr.Length - 1; i++)
+          	{
+          		int minIndex = i;
+          		int minValue = arr[i];
+          		for(int j = i + 1 ;j < arr.Length ;j++)
+          		{
+          			if(arr[j]<minValue)
+          			{
+          				minIndex = j;
+          				minValue = arr[j];
+          			}
+          		}
+          		arr[minIndex] = arr[i];
+          		arr[i] = minValue;
+          	}
+          }
+      }
+  }
+  ```
 
-## 二、实践项目
-
-### 1.需求分析
-
-### 2.控制台基础设置
-
-### 3.多个场景
-
-### 4.开始逻辑实现
-
-### 5.游戏场景逻辑实现
-
-### 6.结束场景逻辑实现
+  内循环从第二个数开始和第一个数比较，在遍历一遍后找到最小的数，放到最左边
 
 # C#核心
 
-## 一、语法知识
-
 ### 1.面对对象的概念
 
+- 面向过程编程
+  是一种以过程为中心的编程思想，分析出解决问题所需要的步骤，然后用函数把步骤一步一步实现，使用的时候一个一个依次调用
+
+- 面向对象编程
+
+  面向对象是一种对现实世界理解和抽象的编程方法，把相关的数据和方法组织为一个整体来看待，从更高的层次来进行程序开发，更贴近事物的自然运行模式特点
+
+- 特点
+
+  提高代码复用率
+  提高开发效率
+  提高程序可拓展性
+  清晰的逻辑关系
+
+- 关键字class
+
+  三大特性：封装、继承、多态
+
+  七大原则：开闭原则 、 依赖倒转原则 、 里氏替换原则 、 单一职责原则、接口隔离原则 、 合成复用原则 、 迪米特法则
 ### 2. 面对对象-封装
+
+用程序语言形容对象
+
+- 类和对象
+
+  类的定义:一般是声明在namespace中，是以关键字 **class** 开始，后跟类的名称。类的主体，包含在一对花括号内。下面是类定义的一般形式：
+
+  ```
+  <access specifier> class  class_name
+  {
+      // member variables //成员变量
+      <access specifier> <data type> variable1;
+      <access specifier> <data type> variable2;
+      ...
+      <access specifier> <data type> variableN;
+      // member methods //成员方法
+      <access specifier> <return type> method1(parameter_list)
+      {
+          // method body
+      }
+      <access specifier> <return type> method2(parameter_list)
+      {
+          // method body
+      }
+      ...
+      <access specifier> <return type> methodN(parameter_list)
+      {
+          // method body
+      }
+  }
+  ```
+
+> 请注意：
+>
+> - 访问标识符 <access specifier> 指定了对类及其成员的访问规则。如果没有指定，则使用默认的访问标识符。类的默认访问标识符是 **internal**，成员的默认访问标识符是 **private**。
+> - 帕斯卡命名法，即每个单词的首字母大写。同一个语句块中不能重名。
+> - 数据类型 <data type> 指定了变量的类型，返回类型 <return type> 指定了返回的方法返回的数据类型。
+> - 如果要访问类的成员，你要使用点（.）运算符。
+> - 点运算符链接了对象的名称和成员的名称。
+
+​	对象的定义：通过类创建出来的，相当于声明一个指定类的变量，创建的过程称为实例化对象，类对象都是引用类型
+
+​	实例化对象的方法：
+
+```c#
+class Person
+{
+
+}
+Person p1;					//已经在栈上分配空间，但地址指向空，即没有分配内存空间（一般指没有在堆上分配空间为没有分配内存空间）
+Person p2 = null;			//已经在栈上分配空间，但地址指向空，即没有分配内存空间（一般指没有在堆上分配空间为没有分配内存空间）
+Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
+```
+
+- 成员变量和访问修饰符
+- 成员方法
+- 构造函数和析构函数
+- 成员属性
+- 索引器
+- 静态成员
+- 静态类和静态构造函数
+- 拓展方法
 
 ### 3. 面对对象-继承
 
+复用封装对象的代码
+
 ### 4.面对对象-多态
+
+同样行为的不同表现
 
 ### 5.面对对象相关知识点
 
