@@ -1392,13 +1392,556 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
 ```
 
 - 成员变量和访问修饰符
+
+  - 成员变量
+
+    1.声明在类语句块中
+
+    2.用来描述对象的特征
+
+    3.可以使任意变量类型
+
+    4.数量不做限制
+
+    5.是否赋值根据需求来定
+
+    ```c#
+    enum E_SexType
+    {
+    	Man,
+    	Woman
+    }
+    struct Position{}
+    class Pet{}
+    class Person
+    {
+    	public string name = "张三";//任意变量类型
+    	int age;
+    	E_SexType sex;//枚举
+        //如果要在类中声明一个和自己相同类型的成员变量时不能对他进行实例化
+    	Person gridFriend;//类 
+    	Person[] boyFriend;//类
+    	Position pos;//结构体
+    	Pet pet;//类
+    }
+    //成员变量的使用 , 使用.来访问 可以访问的 成员变量和方法
+    //值类型默认值都为0 , bool类型为false , 引用类型为null
+    Person p = new Person();
+    p.name = "名字";
+    ```
+
+  - 访问修饰符
+
+    所有类型和类型成员都具有可访问性级别。 该级别可以控制是否可以从你的程序集或其他程序集中的其他代码中使用它们。 [程序集](https://learn.microsoft.com/zh-cn/dotnet/standard/glossary#assembly)是通过在单个编译中编译一个或多个 .cs 文件而创建的 .dll 或 .exe。 可以使用以下访问修饰符在进行声明时指定类型或成员的可访问性：
+
+    - [public](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/public)：同一程序集中的任何其他代码或引用该程序集的其他程序集都可以访问该类型或成员。 某一类型的公共成员的可访问性水平由该类型本身的可访问性级别控制。
+
+    - [private](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/private)：只有同一 `class` 或 `struct` 中的代码可以访问该类型或成员。
+
+    - [protected](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/protected)：只有同一 `class` 或者从该 `class` 派生的 `class` 中的代码可以访问该类型或成员。
+
+    - [internal](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/internal)：同一程序集中的任何代码都可以访问该类型或成员，但其他程序集中的代码不可以。 换句话说，`internal` 类型或成员可以从属于同一编译的代码中访问。
+
+    - [protected internal](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/protected-internal)：该类型或成员可由对其进行声明的程序集或另一程序集中的派生 `class` 中的任何代码访问。
+
+    - [private protected](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/private-protected)：该类型或成员可以通过从 `class` 派生的类型访问，这些类型在其包含程序集中进行声明。
+
+      ## 摘要表
+
+      | 调用方的位置           | `public` | `protected internal` | `protected` | `internal` | `private protected` | `private` |
+      | ---------------------- | :------: | :------------------: | :---------: | :--------: | :-----------------: | :-------: |
+      | 在类内                 |    ✔️️     |          ✔️           |      ✔️      |     ✔️      |          ✔️          |     ✔️     |
+      | 派生类（相同程序集）   |    ✔️     |          ✔️           |      ✔️      |     ✔️      |          ✔️          |     ❌     |
+      | 非派生类（相同程序集） |    ✔️     |          ✔️           |      ❌      |     ✔️      |          ❌          |     ❌     |
+      | 派生类（不同程序集）   |    ✔️     |          ✔️           |      ✔️      |     ❌      |          ❌          |     ❌     |
+      | 非派生类（不同程序集） |    ✔️     |          ❌           |      ❌      |     ❌      |          ❌          |     ❌     |
+
 - 成员方法
+
+  成员方法 （ 函数 ） 用来表现对象行为
+  1 ． 申明在类语句块中
+  2 ． 是用来描述对象的行为的
+  3 ． 规则和函数申明规则相同
+  4 ． 受到访问修饰符规则影响
+  5 ． 返回值参数不做限制
+  6 ． 方法数量不做限制
+
+  > **注意** 成员方法不用加static关键字，必须实例化出对象，再通过对象来使用，相当于该对象执行了某个行为
+
 - 构造函数和析构函数
-- 成员属性
+
+  1.构造函数
+
+  构造函数特点
+
+  1.在实例化时会调用的用于初始化的函数
+
+  2.如果不写会默认存在一个无参构造函数
+
+  构造函数的写法
+
+  1 ． 没有返回值
+
+  2 ． 函数名和类名必须相同
+
+  3 ． 没有特殊需求时一般都 是public 的
+
+  ```c#
+  class Person
+  {
+      string name;
+      int age;
+      public void Person()
+      {
+          name = "张三";
+          age = 18;
+      }
+  	public void Person(string name,int _age) //重载
+      {
+          this.name = name;//this函数里面表示对象自己
+          this.age = _age;
+      }
+  }
+  ```
+
+  > **注意：** 如果不自己实现无参构造函数，而实现了有参构造函数，会失去默认的无参构造
+
+  构造函数的特殊写法
+
+  ```c#
+  class Person
+  {
+      string name;
+      int age;
+      public void Person()this("张三")//在无参构造函数时也可以添加常量进入含参构造函数
+      {
+          age = 18;
+      }
+      public void Person(string _name)
+      {
+          this.name = _name;
+      }
+  	public void Person(string _name,int _age) this(name)//this即该类的构造函数
+      {
+          this.age = _age;
+      }
+  }
+  ```
+
+  2.析构函数
+
+  当引用类型的堆内存被**回收**时 ， 会调用该函数，对于需要手动管理内存的语言 （ 比如 c + + ） ，需要在析构函数中做一些内存回收处理。
+
+  但是 c # 中存在自动垃圾回收机制 GC ， 所以我们几乎不会怎么使用析构函数 。 除非你想在某一个对象被垃圾回收时 ， 做一些特殊处理。
+
+  > 注意：在Unity开发中析构函数几乎不会使用，所以该知识点只做了解即可。
+
+  ```c#
+  class Person
+  {
+      string name;
+      int age;
+      ~Person()// ~+类名即为析构函数，当引用类型的堆内存 被真正回收时 会调用该函数
+      {
+          name = "张三";
+          age = 18;
+      }
+  }
+  ```
+
+  3.垃圾回收机制
+
+  垃圾回收 ， 英文简写GC (Garbage collector)
+
+  垃圾回收的过程是在遍历堆（Heap）上动态分配的所有对象
+
+  通过识别它们是否被引用来确定哪些对象是垃圾 ， 哪些对象仍要被使用
+
+  所渭的垃圾就是没有被任何变量 ， 对象引用的内容，垃圾就需要被回收释放
+
+  垃圾回收有很多种算法 ， 比如
+
+  引用计数 (Reference counting)
+
+  标记清除 （ Mark sweep)
+
+  标记整理 （ Mark compact)
+
+  复制集合 （ copy collection)
+
+  > 注意 ：
+  >
+  > GC 只负责堆 （ Heap ） 内存的垃圾回收
+  >
+  > 引用类型都是存在堆 （ Heap ） 中的 ， 所以它的分配和释放都通过垃圾回收机制来管理
+  >
+  > 栈 （ stack ） 上的内存是由系统自动管理的
+  >
+  > 值类型在栈 （ stack ） 中分配内存的 ， 他们有自己的申明周期 ， 不用对他们进行管理 ， 会自动分配和释放
+
+  c # 中内存回收机制的大概原理
+
+  0 代内存 1 代内存 2 代内存
+
+  代的概念 ：
+
+  代是垃圾回收机制使用的一种算法 （ 分代算法 ）
+
+  新分配的对象都会被配置在第0代内存中
+
+  每次分配都可能会进行垃圾回收以释放内存 （ 0代内存满时 ）
+
+  > 在一次内存回收过程开始时 ， 垃圾回收器会认为堆中全是垃圾 ， 会进行以下两步
+  >
+  > 1 ． 标记对象从根 （ 静态字段 、 方法参数 ） 开始检查引用对象 ， 标记后为可达对象 ， 未标记为不可达对象
+  >
+  >  不可达对象就认为是垃圾
+  >
+  > 2 · 搬迁对象压缩堆 （ 挂起执行托管代码线程 ） 释放未标记的对象搬迁可达对象修改引用地址
+  >
+  > 大对象总被认为是第二代内存目的是减少性能损耗 ，提高性能，不会对大对象进行搬迁压缩 85000字节 (83kb) 以上的对象为大对象
+
+  ```c#
+  GC.collect()//主动去回收
+  ```
+
+  > 一般情况不会调用，在Loading条的时候使用。
+
+- <span id="jump">成员属性</span>
+
+  - 基本概念
+
+    1.用于保护成员变量
+
+    2.为成员属性的获取和赋值添加逻辑处理
+
+    3.解决 3P 的局限性
+
+    public一内外访问
+
+    private— 内部访问
+
+    protected— 内部和子类访问
+
+    属性可以让成员变量在外部，只能获取不能修改或者只能修改不能获取
+
+  - 示例
+
+  ```c#
+  class Person
+  {
+      private int age;
+      public string Age //
+      {
+      	get
+      	{
+      		//加密处理
+      		return age+5;
+      	}
+      	set
+      	{
+      		//加密处理
+      		if(value<0)
+      		{
+      			value = 0;
+      			Console.WriteLine("年龄不能小于0");
+      		}
+      		age = value-5;
+      	}
+      }
+  }
+  class main
+  {
+      Person p1 = new Person;
+      Person p2 = new Person;
+      p1.Age = 10; // 实际上为10
+      p2.Age = -10;// 实际上为-10
+  }
+  ```
+
+  > get和set可以加访问修饰符
+  >
+  > 注意
+  > 1 ． 默认不加会使用属性申明时的访问权限
+  >
+  > 2 ． 加的访问修饰符要低于属性的访问权限
+  >
+  > 3 ． 不能让 get 和 set 的访问权限 **都低于** 属性的权限
+  >
+  > 3 ．  get 和 set 可以只有一个，此时不需要添加修饰符
+
+  ```c#
+  class Person
+  {
+      private int age;
+      public string Age //
+      {
+      	get //默认public
+      	{
+      		//加密处理
+      		return age+5;
+      	}
+      	private set //就只能在类里面设置该成员变量
+      	{
+      		//加密处理
+      		if(value<0)
+      		{
+      			value = 0;
+      			Console.WriteLine("年龄不能小于0");
+      		}
+      		age = value-5;
+      	}
+      }
+  }
+  ```
+
+  - 自动属性
+
+    作用 ： 外部能得不能改的特征,如果类中有一个特征是只希望外部能得不能改的又没什么特殊处理
+
+    那么可以直接使用自动属性
+
+  ```c#
+    class Person
+    {
+        public int Height
+        {
+        	get;
+        	private set;
+        }
+    }
+  ```
+
+  > 虽然成员属性可以替代成员变量，但会造成性能的消耗（代码变多了），只有[需要](#jump)的时候才引用。
+
 - 索引器
+
+  - 概念
+
+    让对象可以像数组一样通过索引访问其中元素，使程序看起来更加直观，容易编写
+
+  - 语法
+
+   ```c#
+    //访问修饰符 返回值 this[参数类型 参数名,参数类型,参数名]
+    //{
+    //	get
+    //	{
+    //		可以写逻辑
+    //		return 返回值;
+    //	};
+    //	set
+    //	{
+    //		可以写逻辑
+    //	};
+    //}
+     public class Person
+     {
+         private string name;
+         private int age;
+         private Person[] friends;
+         public Person this[int index]
+         {
+             get
+             {
+                 if(index == 0 || index > friends.Length -1)
+                 {
+                     return null;
+                 }
+    			 else
+                 {
+                     return friends[index];
+                 }
+             }
+             set
+             {
+                 if(friens == null)
+                 {
+                     friends = new People[]{value};
+                 }
+                 else if(index > friends.Length -1)
+                 {
+                     Person[friends.Length+1] newfriends = new Person;//新对象组长度加一
+                     for(int i ;i<friends.Length;i++)//将旧的搬运过去
+                     {
+                         newfriends[i] = friends[i]; 
+                     }
+                     newfriends[friends.Length+1] = value;//添加新朋友
+                     friends = newfriends;//转移引用到原来的friends
+                 }else
+                 {
+                     friends[index] = value;//更改已有朋友
+                 }
+             }
+         }
+     }
+   ```
+
+    > 函数和属性的综合体，注意是[]中括号
+
+    ```c#
+    class main
+    {
+    	Person p = new Person;
+        p[0] = new Person;//创建朋友0,让对象可以像数组一样通过索引访问其中元素
+    }
+    ```
+
+  - 重载
+
+   ```c#
+     public class Person
+     {
+         private string name;
+         private int age;
+         private Person[] friends;
+         private int[,] array;
+         public int this[int i,int j]//索引器重载 this相当于变量名
+         {
+             get
+             {
+                 return array[i,j];
+             }
+             set
+             {
+                 array[i,j] = value;
+             }
+         }
+         public Person this[int index]
+         {
+         //省略
+         }
+     }
+   ```
+
+    索引器主要作用可以让我们以中括号的形式，自定义类中的元素，规则自己定，访问时和数组一样,比较适用于 在类中有数组变量时使用，可以方便的访问和进行逻辑处理。
+
 - 静态成员
+
+  - 概念
+
+    静态关键字 static，用 stat 让修饰的成员变量 、 方法 、 属性等称为静态成员
+
+    直接使用类名点出来使用
+
+    示例
+
+    ```c#
+    public class test
+    {
+    	private static float pi = 3.1415926f;
+    }
+    ```
+
+  - 特点
+
+    我们要使用的对象 ， 变量 ， 函数都是要在内存中分配内存空间的，之所以要实例化对象 ， 目的就是分配内存空间 ， 在程序中产生一个抽象的对象。
+    
+    程序开始运行时就会分配内存空间 。 所以我们就能直接使用 。
+    
+    静态成员和程序是一体的，只要使用了它 ， 直到程序结束时内存空间才会被释放，所以一个静态成员就会有自己唯一的一个 “ 内存小房间 ”，这让静态成员就有了唯一性。
+    
+    在任何地方使用都是用的小房间里的内容 ， 改变了它也是改变小房间里的内容 。
+    
+    > 注意：静态函数中不能使用非静态成员,成员变量只能将对象实例化出来后才能点出来使用不能直接使用非静态成语，否则会报错。
+    >
+    > ​			非静态函数可以使用静态成员
+    
+    静态变量常用唯一的变量，方便别人获取的对象声明，静态方法常用来唯一的方法声明。
+    
+  - const常量可以看做特殊的static
+
+    相同点
+    	他们都可以通过类名点出使用
+    不同点
+
+    1 .   const 必须初始化 ， 不能修改，static 没有这个规则
+
+    2  .  const 只能修饰变量 、 static可以修饰很多
+
+    3  .  const 一定是写在访问修饰符后面的 ， static没有这个要求
+
 - 静态类和静态构造函数
+
+  - 静态类
+
+    用 static 修饰的类
+
+    特点
+
+    1 .  **只能包含静态成员**
+
+    2 . **不能被实例化**
+
+    作用
+
+    1 ． 将常用的静态成员写在静态类中方便使用
+
+    2 ． 静态类不能被实例化 ， 更能体现工具类的唯删国
+
+  - 静态构造函数
+
+    在构造函数上加上static修饰
+
+    特点
+
+    1 .  静态类和普通类都可以有
+
+    2 .  不能使用访问修饰符
+
+    3 .  不能有参数
+
+    4 .  只会自动调用一次
+
+    作用
+
+    在静态构造函数中初始化静态变量
+
+    ```c#
+    class Test
+    {
+    	static Test()
+    	{
+    		Console.WriteLine("静态构造函数")
+    	}
+    	public Test()
+    	{
+    		Console.WriteLine("普通构造函数")
+    	}
+    }
+    class Program
+    {
+        Static void main()
+        {
+        Test t = new Test();
+        Test t2 = new Test(); 
+        }
+    }
+    /*输出
+    静态构造函数
+    普通构造函数
+    普通构造函数
+    */
+    ```
+
+    
+
 - 拓展方法
+
+  为现有非静态变量类型添加新方法
+
+  作用
+
+  1 .  提升程序拓展性
+  2 .  不需要再对象中重新写方法
+  3 .  不需要继承来添加方法
+  4 .  为别人封装的类型写额外的方法
+
+  特点
+  1 .  一定是写在静态类中
+  2 .  一定是个静态函数
+  3 .  第一个参数为拓展目标
+  4 .  第一个参数用 this 修饰
 
 ### 3. 面对对象-继承
 
@@ -1493,3 +2036,10 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
 ### 12.结束流程
 
 ### 13.优化线程
+
+---
+
+参考文献
+
+ [ 微软 | Microft docs.访问修饰符(C# 编程指南)](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/public) 
+
