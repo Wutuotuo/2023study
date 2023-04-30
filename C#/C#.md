@@ -1928,7 +1928,7 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
 
 - 拓展方法
 
-  为现有非静态变量类型添加新方法
+  **为现有 <u>非静态</u> 变量类型添加新方法**
 
   作用
 
@@ -1942,10 +1942,229 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
   2 .  一定是个静态函数
   3 .  第一个参数为拓展目标
   4 .  第一个参数用 this 修饰
+  
+  ```c#
+  //访问修饰符 static 返回值 函数名(this 拓展类名 参数名,参数类型 参数名,......)
+  //成员方法 是需要 实例化对象后 才能使用的
+  //value 代表 使用该方法的 实例化对象
+  static class tool
+  {
+      public static void SpeakValue(this int value)//here 第一个参数是规则，规定了为谁拓展的方法
+      {
+          Console.WriteLine("为Int拓展的方法"+value);
+      }
+  }
+  class Program
+  {
+      static void Main(string[] Args)
+      {
+          Console.WriteLine("拓展方法");
+          int i = 2;
+          i.SpeakValue();
+      }
+  }
+  //输出
+  //拓展方法
+  //为Int拓展的方法2
+  ```
+  
+  >  注意：如果拓展的方法和原有的方法重名且参数相同，那么调用原有的方法
+  
+- 运算符重载
+
+  概念
+
+  让自定义类和结构体，能够使用运算符，使用关键字operator
+
+  特点
+
+  1 .  一定是一个公共的静态方法
+
+  2 .  返回值写在operator前
+
+  3 .  逻辑处理自定义
+
+  作用
+
+  1 .  让自定义类和结构体对象可以进行运算
+
+  注意
+
+  1 .  条件运算符需要成对实现
+
+  2 .  一个符号可以多个重载
+
+  3 .  不能使用 ref 和 out
+
+  基本语法
+
+  ```c#
+  //public static 返回类型 operator 运算符(参数列表)
+  class Point
+  {
+  	public int x;
+  	public int y;
+  	public static Point operator +(Point p1,Point p2)
+  	{
+  		Point p = new Point();
+  		p.x = p1.x + p2.x;
+  		p.y = p1.y + p2.y;
+  		return p;
+  	}
+      public static Point operator +(Point p1,int value)
+  	{
+  		Point p = new Point();
+  		p.x = p1.x + value;
+  		p.y = p1.y + value;
+  		return p;
+  	}
+  }
+  class Program
+  {
+      static void Main(String[] Args)
+      {
+          Point p1 = new Point();
+          Point p2 = new Point();
+          p1.x = 3;
+          p1.y = 4;
+          p2.x = 5;
+          p2.y = 6;
+          Point p3 = p1 + p2;
+          Point p4 = p2 + 3;//正确，重载参数中必须有一个为返回值的类型。
+          Point p5 = 3 + p4;//错误，重载和参数顺序有关
+      }
+  }
+  ```
+
+  可重载的运算符：算数运算符（都可以），逻辑运算符（只有非!），位运算符（都可以），条件运算符（都可以，但是必须成对实现）
+
+  不可重载的运算符：逻辑与&&，逻辑或||，索引符[]，强势运算符()，特殊运算符（点. 三目运算符?:赋值符号=）
+
+- 内部类和分部类
+
+  内部类
+
+  概念
+
+  ​	在一个类中，再声明一个类
+
+  特点
+
+  ​	在使用时要用包裹者点出自己
+
+  作用
+
+  ​	亲密关系的表现
+
+  注意
+
+  ​	访问修饰符作用很大
+
+  ```c#
+  calss Person
+  {
+  	public int age;
+  	public string name;
+  	public Body body;
+  	public class Body
+      {
+          Arm leftArm;
+          Arm rightArm;
+          class Arm;
+      }
+  }
+  class Program
+  {
+      static void Main(string[] Args)
+      {
+  		Person p = new Person();
+          Person p.Body b = new Person.Body();
+          Person p.Body.Arm a = new Person.Body.Arm();//错误，访问权限不足
+      }
+  }
+  ```
+
+  分部类
+
+  概念
+
+  ​	把一个类分成几部分，关键字 `partial`
+
+  作用
+
+  ​	分布描述一个类
+
+  ​	增加程序拓展性
+
+  注意
+
+  ​	分布类可以写在多脚本文件中
+
+  ​	分布类的访问修饰符要一致
+
+  ​	分布类中不能有重复成员
+
+  ```c#
+  partial class Student
+  {
+  	public name;
+      public num;
+  }
+  partial class Student
+  {
+  	public sex;
+      public void Speak();
+  }
+  ```
+
+  分部方法
+
+  概念
+
+  ​	将方法的声明和实现分离，用分部关键字去声明的方法
+
+  特点
+
+  1 .  不能加访问修饰符默认私有
+
+  2 .  只能在分部类中申明
+
+  3 .  返回值只能是void
+
+  4 .  可以有参数，但不能用out关键字
+
+  ```c#
+  partial class Student
+  {
+  	public name;
+      public num;
+      partial void Speak();
+  }
+  partial class Student
+  {
+  	public sex;
+      partial void Speak()
+      {
+          //实现逻辑
+      }
+  }
+  ```
+
+  
 
 ### 3. 面对对象-继承
 
-复用封装对象的代码
+- 复用封装对象的代码
+
+- 继承的基本原则
+
+- 里式替换原则
+
+- 继承中的构造函数
+
+- 万物之父和装箱拆箱
+
+- 密封类
 
 ### 4.面对对象-多态
 
