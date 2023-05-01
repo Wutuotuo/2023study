@@ -1521,7 +1521,7 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
       {
           this.name = _name;
       }
-  	public void Person(string _name,int _age) this(name)//this即该类的构造函数
+  	public void Person(string _name,int _age) this(name)//this即该类的构造函数 先this再执行这个构造函数
       {
           this.age = _age;
       }
@@ -2154,21 +2154,305 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
 
 ### 3. 面对对象-继承
 
-- 复用封装对象的代码
+概念
 
-- 继承的基本原则
+​	若类A继承类B，那么类A继承类B的所有成员，拥有类B的所有特征以及行为
+
+​	被继承的类称为 父类，基类，超类
+
+​	继承的类称为 子类，派生类
+
+​	子类可以有自己的特征和行为
+
+特点
+
+​	单根性 子类只能有一个父类
+
+​	传递性 子类可以间接继承父类的父类
+
+语法
+
+```c#
+//class 类名:被继承的类
+class Teacher
+{
+    public string name;
+    public int number;
+    public void SpeakNumber();
+}
+class TeachingTeacher : Teacher
+{
+    public string subject;
+    public void SpeakSubject();
+}
+class Program
+{
+    static void Main(string[] Args)
+    {
+		TeachingTeacher t = new TeachingTeacher;
+        t.name = "张三";
+    }
+}
+```
+
+访问修饰符的影响
+
+```c#
+//public private protect internal
+```
+
+子类和父类的同名成员
+
+​	c#允许子类父类出现相同的成员，但不推荐使用
+
+```c#
+class Teacher
+{
+    public string name;
+}
+class TeachingTeacher : Teacher
+{
+    public string name;
+}
+class Program
+{
+    static void Main(string[] Args)
+    {
+		TeachingTeacher t = new TeachingTeacher;
+        t.name = "张三";//默认为TeachingTeacher类中的name
+    }
+}
+```
 
 - 里式替换原则
 
+  概念
+
+  ​	任何父类出现的地方，子类都可以替代
+
+  ​	也就是 父类容器装子类对象，因为子类对象包含了父类的所有内容
+
+  ​	方便了对象的存储和管理
+
+  实现
+
+  ```c#
+  class GameObject{}
+  class Player:GameObject{}
+  class Monster:GameObject{}
+  class Program
+  {
+      static void Main(string[] Args)
+      {
+  		GameObject player = new Player;//用父类容器装子类对象
+          GameObject monster = new Monster;//用父类容器装子类对象
+          GameObject[] object = new Gameobject[] {new Player(),new Monster()};
+      } 
+  }
+  ```
+
+  is和as
+
+  ```c#
+  //is 一个对象是否指定类对象
+  //返回值 bool
+  //as 将一个对象转换为指定类对象
+  //返回值 指定类对象 失败返回Null
+  //语法
+  //类对象 is 类名 该语句块有bool返回值true或false
+  //类对象 as 类名 返回值对象或Null
+  if (player is  Player)
+  {
+  	Player p = player as Player;//p = player
+  	Player p1 = monster as Player;//p1==null
+  }
+  ```
+
 - 继承中的构造函数
+
+  概念
+
+  当申明一个子类对象时，先执行父类的构造函数，再执行子类的构造函数
+
+  注意：父类无参构造很重要，子类可以通过base关键字代表父类调用父类构造
+
+  ```c#
+  class Teacher
+  {
+      public Teacher()
+      {
+      	Console.WriteLine("父类构造函数");
+      }
+  }
+  class TeachingTeacher : Teacher
+  {
+      public TeachingTeacher()
+      {
+      	Console.WriteLine("子类构造函数");
+      }
+  }
+  class Program
+  {
+      static void Main(string[] Args)
+      {
+  		TeachingTeacher t = new TeachingTeacher;
+      }
+  }
+  //输出
+  //父类构造函数
+  //子类构造函数
+  ```
+
+  ```c#
+  class Teacher
+  {
+      public Teacher(int i)
+      {
+      	Console.WriteLine("父类构造函数");
+      }
+  }
+  class TeachingTeacher : Teacher //报错，因为父类的无参构造函数被有参构造函数顶掉了，详细查看类的构造函数
+  {
+      //父类无参构造很重要
+  }
+  ```
+
+  通过base关键字调用指定父类构造
+
+  ```c#
+  class Teacher
+  {
+      public Teacher(int i)
+      {
+      	Console.WriteLine("父类构造函数");
+      }
+  }
+  class TeachingTeacher : Teacher 
+  {
+      public TeachingTeacher(int i):base(i)
+      {
+          //不管是默认无参构造还是通过base进行有参构造
+          Console.WriteLine("一个参数构造函数");
+          //父类构造必须执行
+      }
+      public TeachingTeacher(int i ,string str)this(i)
+      {
+          //父类构造必须执行
+          Console.WriteLine("两个参数构造函数");
+      }
+  }	
+  //输出
+  //父类构造函数
+  //一个参数构造函数
+  //两个参数构造函数
+  ```
+
+  > 先执行父类构造函数，在执行子类构造函数
 
 - 万物之父和装箱拆箱
 
+  - 万物之父object
+
+    ​	object是所有类型的基类，他是一个引用类型的类
+
+    作用
+
+    ​	可以利用里氏替换原则，用object容器装所有对象，可以用来表示不确定类型
+
+
+  ```c#
+  Father f = new son;
+  if(f is son)
+  {
+  	(f as son).speak();
+  }
+  //object之引用类型
+  object o = new son;
+  if(o is son)
+  {
+  	(o as son).speak();
+  }
+  //object之值类型
+  object o2 = 1;//int类
+  object o3 = 1f;//flout类
+  //强转
+  int fl = (float)o2;
+  //object之string
+  object o4 = "123456";
+  string str1 = o4.ToString();
+  string str2 = o4 as string;
+  //object之数组
+  object o5 = new int[10]
+  int[] arr = o5 as int[];//或者int[] arr = (int[])o5;
+  
+  ```
+
+
+
+装箱拆箱
+
+​	用object存值类型（装箱）
+
+​	再把object转为值类型(拆箱)
+
+装箱
+
+​	把值类型用引用类型存储
+
+​	栈内存会迁移到堆内存中
+
+拆箱
+
+​	把引用类型的值类型取出来
+
+​	堆内存会迁移到栈内存中
+
+好处
+
+​	不确定类型时可以方便参数的存储和传递
+
+坏处
+
+​	存在内存迁移 ， 增加性能消耗
+
+```c#
+class Program
+{
+    static void Main(string[] Args)
+    {
+		TestFunc(1,2,"nihao",new son());
+    }
+    static void TestFunc(params object[] array)
+    {
+        
+    }
+}
+```
+
 - 密封类
+
+  概念
+
+  使用sealed关键字，让类无法再被继承
+
+  ```c#
+  sealed class father
+  {}
+  class son:father
+  {}//报错 无法被继承
+  ```
+
+  在面向对象程序的设计中 ， 密封类的主要作用就是不允许最底层子类被继承
+  可以保证程序的规范性 、 安全性
 
 ### 4.面对对象-多态
 
 同样行为的不同表现
+
+- Vob
+- 抽象类和抽象方法
+- 密封接口
+- 接口
 
 ### 5.面对对象相关知识点
 
@@ -2212,7 +2496,7 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
 
 ### 6.Lambad表达式
 
-### 7.List排序
+### 7.List排序d
 
 ### 8.协变逆变
 
