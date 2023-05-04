@@ -983,16 +983,6 @@ public class testStructure
 
 - 如果不使用 New 操作符，只有在所有的字段都被初始化之后，字段才被赋值，对象才被使用。
 
-  > tip:
-  >
-  > 类和结构有以下几个基本的不同点：
-  >
-  > - 结构是值类型，类是引用类型。
-  > - 结构不支持继承。
-  > - 结构不能声明默认的构造函数。
-  > - 结构体中声明的字段无法赋予初值，类可以:
-  > - 结构体的构造函数中，必须为结构体所有字段赋值，类的构造函数无此限制:
-  > - 结构是值类型，它在栈中分配空间；而类是引用类型，它在堆中分配空间，栈中保存的只是引用。
 
 ### 2.数值型和引用类型
 
@@ -2189,7 +2179,7 @@ class Program
 {
     static void Main(string[] Args)
     {
-		TeachingTeacher t = new TeachingTeacher;
+		TeachingTeacher t = new TeachingTeacher();
         t.name = "张三";
     }
 }
@@ -2218,7 +2208,7 @@ class Program
 {
     static void Main(string[] Args)
     {
-		TeachingTeacher t = new TeachingTeacher;
+		TeachingTeacher t = new TeachingTeacher();
         t.name = "张三";//默认为TeachingTeacher类中的name
     }
 }
@@ -2244,8 +2234,8 @@ class Program
   {
       static void Main(string[] Args)
       {
-  		GameObject player = new Player;//用父类容器装子类对象
-          GameObject monster = new Monster;//用父类容器装子类对象
+  		GameObject player = new Player();//用父类容器装子类对象
+          GameObject monster = new Monster();//用父类容器装子类对象
           GameObject[] object = new Gameobject[] {new Player(),new Monster()};
       } 
   }
@@ -2295,7 +2285,7 @@ class Program
   {
       static void Main(string[] Args)
       {
-  		TeachingTeacher t = new TeachingTeacher;
+  		TeachingTeacher t = new TeachingTeacher();
       }
   }
   //输出
@@ -2367,7 +2357,7 @@ class Program
   	(f as son).speak();
   }
   //object之引用类型
-  object o = new son;
+  object o = new son();
   if(o is son)
   {
   	(o as son).speak();
@@ -2382,7 +2372,7 @@ class Program
   string str1 = o4.ToString();
   string str2 = o4 as string;
   //object之数组
-  object o5 = new int[10]
+  object o5 = new int[10];
   int[] arr = o5 as int[];//或者int[] arr = (int[])o5;
   
   ```
@@ -2449,28 +2439,876 @@ class Program
 
 同样行为的不同表现
 
-- Vob
-- 抽象类和抽象方法
-- 密封接口
+- 多态Vob（virtual 虚函数 override 重写 base 父类）
+
+  让继承同一父类的子类们，在执行相同方法时有不同表现
+
+  ```c#
+  class GameObject
+  {
+  	public virtual void Atk1()
+      {
+          Console.WriteLine("GameObjectAtk1");
+      }
+      public void Atk2()
+      {
+          Console.WriteLine("GameObjectAtk2");
+      }
+  }
+  class Player:GameObject
+  {
+      public override void Akt1()
+      {
+          base.Atk1;//可以用base来执行父类中的方法
+          Console.WriteLine("Player")
+      }
+  }
+  class Monster:GameObject
+  {
+      public new void Akt2()
+      {
+          Console.WriteLine("Monster")
+      }
+  }
+  class Program
+  {
+      static void Main(string[] Args)
+      {
+  		GameObject p = new Player();
+          GameObject m = new Monster();
+          m.atk(); //执行了父类输出GameObjectAtk2 						不是期望的输出
+          (m as Monster).atk; //执行了子类输出Monster
+          p.atk(); //使用virtual和override：输出GameObjectAtk1 Player 	 是期望的输出
+      }
+  }
+  ```
+
+  > 让一个对象有唯一性为的特征
+
+- 抽象类和抽象方法aob 
+
+  - 抽象类
+
+    被抽象关键字abstract修饰的类，恰当的使用让基类更加安全
+
+    特点
+
+    1 .  不能被实例化的类
+
+    2 .  可以包含抽象方法
+
+    3 .  继承抽象类必须重写抽象方法
+
+    ```c#
+    abstract class Thing
+    {
+        public string name;
+        
+    }
+    class Water：Thing
+    {
+        
+    }
+    class Program
+    {
+        static void Main(string[] Args)
+        {
+    		Thing w = new Water();//可以里式替换原则
+            Thing t = new Thing();//错误，抽象类不能实例化
+        }
+    }
+    ```
+
+  - 抽象方法
+
+    被抽象关键字abstract修饰的方法
+
+    特点
+
+    1 .  只能在抽象类中声明
+
+    2 .  没有方法体
+
+    3 .  不是私有的
+
+    4 .  继承后必须实现 用override重写
+
+    ```c#
+    abstract class Fruit
+    {
+        public string name;
+        public abstract void Bad();
+    }
+    class Banana
+    {
+        public override void Bad()
+        {
+            int baddata;
+        }
+    }
+    ```
+
+    > 虚方法和抽象方法的区别
+    >
+    > ```c#
+    > abstract class Fruit
+    > {
+    >     public string name;
+    >     public abstract void Bad();//抽象方法只有方法体 且只能写在抽象类中
+    >     public virtual void Size()
+    >     {
+    >         //虚方法可以选择是否写逻辑
+    >     }
+    > }
+    > class Banana
+    > {
+    >     public override void Bad()//必须实现抽象方法
+    >     {
+    >         int badData;
+    >     }
+    >     //可以不实现虚方法 都可以用override重写
+    > }
+    > ```
+    >
+    > 
+
 - 接口
 
-### 5.面对对象相关知识点
+  关键字interface 接口是 **行为的抽象规范** ，是一种自定义的类型
 
-## 二、实践项目
+  - 接口声明的规范
 
-### 1.多个脚本文件
+    1 .  只包含方法 、 属性 、 索引器 、 事件
 
-### 2.Uml类图
+    2 .  成员不能被实现
 
-### 3.七大原则
+    3 .  成员可以不用与访问修饰符 ， 不能是私有的
 
-### 项目-需求分析
+    4 .  接口不能继承类 ， 但是可以继承另一个接口
 
-#### 游戏对象与场景更新接口
+  - 接口的使用规范
 
-#### 实现多场景切换
+    1 .  类可以继承多个接口
 
-#### 游戏场景逻辑实现
+    2 .  类继承接口后 ， 必须实现接口中所有成员
+
+  - 特点
+
+    1 .  它和类的申明类似
+
+    2 .  接口是用来继承的
+
+    3 .  接口不能被实例化 ， 但是可以作为容器存储对象
+
+​		接口的声明
+
+​		类可以继承一个类和多个接口，继承了接口后必须实现其中的内容并且必须是 public 的
+
+```c#
+//interface 接口名
+//{
+//}
+//接口命名规范 I+帕斯卡命名法
+inrerface IFly
+{
+    //方法
+    void Fly();//成员不能被实现 不能为私有 默认public
+    //成员属性
+    string Name
+    {
+        get;//成员不能被实现
+        set;//成员不能被实现
+    }
+    //索引
+    int this[int index]
+    {
+        get;//成员不能被实现
+        set;//成员不能被实现
+    }
+    //事件
+    event Action doSomething;//成员不能被实现
+}
+class Animal
+{
+}
+class Person:Animal,IFly//一个类可以继承一个类和多个接口
+{
+    //方法
+    public virtual void Fly() //可以加virtual关键字在子类继承重写
+    {
+        
+    }
+    //成员属性
+    public string Name
+    {
+        get;
+        set;
+    }
+    //索引
+    public int this[int index]
+    {
+        get
+        {
+            return 0;
+        }
+        set
+        {
+            
+        }
+    }
+    //事件
+    public event Action doSomething;
+}
+class Program
+{
+    static void Main(string[] Args)
+    {
+		IFly f = new Person();//可以里式替换原则
+        IFly fly = new IFly();//错误，接口不能实例化
+    }
+}
+```
+
+>  通过相同的行为，可以储存具有同样行为的类
+>
+> 比如 会飞的动物，会坐飞机的人，会飞的飞机
+
+接口继承接口时，不需要实现，类继承接口需要实现所有内容
+
+```c#
+interface IWalk
+{
+    void Walk();
+}
+interface IFly
+{
+    void Fly();
+}
+interface IMove:IWalk,IFly
+{
+}
+class Test()
+{
+    public void Walk()
+    {
+    }
+    public void Fly()
+    {
+    }
+}
+class Program
+{
+    static void Main(string[] Args)
+    {
+		IWalk t1 = new Test();//可以里式替换原则
+		IFly  t2 = new Test();//可以里式替换原则
+        IMove t3 = new Test();//可以里式替换原则
+    }
+}
+```
+
+当继承的两个接口存在同名方法时，显式实现接口 不能写访问修饰符
+
+```c#
+interface IAtk
+{
+	void Atk()
+}
+interface ISuperAtk
+{
+    void Atk()
+}
+class Player:IAtk,ISuperAtk
+{
+    //用接口名.行为名来显式实现接口
+    void IAtk.Atk()
+    {}
+    void ISuperAtk.Atk()
+    {}
+}
+class Program
+{
+    static void Main(string[] Args)
+    {
+		Player p = new Player;//需要转换成对应接口去使用
+        (p as IAtk).Atk();
+        (p as ISuperAtk).Atk();
+    }
+}
+```
+
+>  继承类：是对象间的继承 ， 包括特征行为等等
+>
+>  继承接口：是行为间的继承，继承接口的行为规范 ，按照规范去实现内容
+
+- 密封方法
+
+  用密封关键字 sealed 修饰的重写函数
+
+  作用 ： 让虚方法或者抽象方法之后不能再被重写
+
+  特点 ： 和 override— 起出现
+
+  ```c#
+  abstract class Animal
+  {
+      public string name;
+      public abstract void Eat();
+  	public virtual Speak()
+      {
+          Console.WriteLine("哼哼");
+      }
+  }
+  class Person:Animal
+  {
+      public override void Eat()
+      {
+          Console.WriteLine("吧唧");
+      }
+      public sealed override void Speak() //密封了该重写的方法
+      {
+      }
+  }
+  class SuperPerson:Person
+  {
+      public override void Eat()
+      {
+          base.Eat();
+      }
+      public override void Speak() //报错该重写的方法密封了
+      {
+          base.Speak();
+      }
+  }
+  ```
+
+  
+
+### 5.面对对象相关知识点补充
+
+#### 1.命名空间
+
+命名空间是用来组织和重用代码的
+
+作用
+
+就像是一个工具包 ， 类就像是一件一件的工具 ， 都是申明在命名空间中的
+
+- 命名空间的使用
+
+  ```c#
+  //namespace 命名空间名
+  //{
+  //	类名
+  //}
+  namespace MyNameSpace
+  {
+      class Test1
+      {}
+  }
+  namespace MyNameSpace
+  {
+      class Test2:Test1 //可以分成两块，两个文件来写，同属于一个命名空间
+      {}
+  }
+  ```
+
+  在不同名命名空间中，需要使用`using`去引用或者指明出处
+
+  ```c#
+  using MyNameSpace;
+  using System;
+  
+  namespace Test
+  {
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+  			Test1 t = new Test2();//使用using
+              MyNameSpace.Test1 t = new MyNameSpace.Test2();//不使用using的话必须指明出处
+  		}
+  	}
+  }
+  ```
+
+- 不同命名空间中允许有同名类
+
+  ```c#
+  namespace MyNameSpace1
+  {
+      class Test1
+      {}
+  }
+  namespace MyNameSpace2
+  {
+      class Test1
+      {}
+  }
+  ```
+
+  如果要使用不同命名空间的同名类，则必须指明出处
+
+  ```c#
+  using System;
+  
+  namespace Test
+  {
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+              MyNameSpace1.Test1 t = new MyNameSpace2.Test1();//不同命名空间的同名类必须指明出处
+  		}
+  	}
+  }
+  ```
+
+- 命名空间可以包裹命名空间
+
+  ```c#
+  namespace MyGame
+  {
+      namespace UI
+      {
+          class Image;
+      }
+      namespace Scene
+      {
+          class Image;
+      }
+      namespace Battle
+      {}
+  }
+  ```
+
+  ```c#
+  using System;
+  namespace Test
+  {
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+              Image i = new Image();
+  		}
+  	}
+  }
+  ```
+
+#### 2.关于修饰类的访问修饰符
+
+  命名空间中的类默认为internal
+
+  public 公共类
+
+  internal 该程序集
+
+  abstract 抽象类
+
+  sealed 密封类
+
+  partial 分部类
+
+#### 3.万物之父中的方法
+
+- object中的静态方法
+
+  Equals
+
+  ​	判断两个对象是否相等
+
+  ​	最终的判断权 ， 交给左侧对象的Equals 方法 ，
+
+  ​	不管值类型引用类型都会按照左侧对象Equals 方法的规则来进行比较
+
+  ```c#
+  namespace Test
+  {
+  	class Test1
+      {}
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+              Console.WriteLine(object.Equals(1,1));//True
+              Test1 t1 = new Test1();
+              Test1 t2 = new Test1();
+              Console.WriteLine(object.Equals(t1,t2));//False 地址不同
+              t2 = t1;
+              Console.WriteLine(object.Equals(t1,t2));//True
+  		}
+  	}
+  }
+  ```
+
+  ReferenceEquals 
+
+  ​	比较两个对象是否是相同的引用，主要是用来比较引用类型的对象，值类型对象返回值始终是 false 。
+
+  ```c#
+  namespace Test
+  {
+  	class Test1
+      {}
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+              Console.WriteLine(ReferenceEquals(1,1));//False object是基类不写也行
+              Test1 t1 = new Test1();
+              Test1 t2 = new Test1();
+              Console.WriteLine(ReferenceEquals(t1,t2));//False 地址不同
+              t2 = t1;
+              Console.WriteLine(ReferenceEquals(t1,t2));//True 地址相同
+  		}
+  	}
+  }
+  ```
+
+- object中的成员方法
+
+  普通方法 GetType
+
+  该方法在反射相关知识点中是非常重要的方法 ， 之后我们会具体的讲解这里返回的 T y p e 类型 。
+
+  该方法的主要作用就是获取对象运行时的类型 Type ，
+
+  通过 Type 结合反射相关知识点可以做很多关于对象的操作 。
+
+  ```c#
+  namespace Test
+  {
+  	class Test1
+      {}
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+  			Test1 t = new Test1();
+              Type type =t.GerType();
+  		}
+  	}
+  }
+  ```
+
+  普通方法MemberwiseClone
+
+  该方法用于获取对象的浅拷贝对象 ， 口语化的意思就是会返回一个新的对象 ，
+
+  但是新对象中的引用变量会和老对象中一致 。
+
+  ```c#
+  namespace Test
+  {
+  	class Test1
+      {
+      	public int i =1;
+      	public Test2 t= new Test2();
+      	public Test1 Clone()
+      	{
+  			return MemberwiseClone() as Test1;//MemberwiseClone()是protect的，因此要用public包裹起来
+      	}
+      }
+      class Test2
+      {
+      	public int i = 2;
+      }
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+  			Test1 t1 = new Test1();
+              Test2 t2 = t1.Clone();
+              Console.WriteLine(t1.i); 	//1
+              Console.WriteLine(t1.t.i); 	//2
+              Console.WriteLine(t2.i); 	//1
+              Console.WriteLine(t2.t.i);  //2
+              //改变Test1和Test2中i的值
+              t2.i = 20;
+              t2.t.i = 21;
+              Console.WriteLine(t1.i);	//1
+              Console.WriteLine(t1.t.i);	//21	新对象中的引用变量会和老对象中一致
+              Console.WriteLine(t2.i);	//20
+              Console.WriteLine(t2.t.i);	//21
+  		}
+  	}
+  }
+  ```
+
+- object中的虚方法
+
+  虚方法 `Equals`
+
+  默认实现还是比较两者是否为同一个引用 ， 即相当于 ReferenceEquals
+
+  但是微软在所有值类型的基类 system.valueType 中重写了该方法 ， 用来比较值相等 。
+
+  我们也可以重写该方法 ， 定义自己的比较相等的规则
+
+  虚方法 `GetHashCode`
+
+  该方法是获取对象的哈希码
+
+  （ 一种通过算法算出的 ， 表示对象的唯一编码 ， 不同对象哈希码有可能一样 ， 具体值根据哈希算法决定 ） ，
+
+  我们可以通过重写该函数来自己定义对象的哈希码算法 ， 正常情况下 ， 我们使用的极少 ， 基本不用 。
+
+  虚方法`ToString`
+
+  该方法用于返回当前对象代表的字符串 ， 我们可以重写它定义我们自己的对象转字符串规则，
+
+  该方法非常常用 。 当我们调用打印方法时 ， 默认使用的就是对象的 Tostring 方法后打印出来的内容 。
+
+#### 5.字符串String
+
+- 字符串指定位置获取
+
+  ```c#
+  string name = "张三";
+  //字符串本质是char数组
+  Console.WriteLine(name[0]);
+  //转为char数组
+  char[] chars = name.ToCharArray();
+  //获取每个hcar
+  for(int i = 0 ;i < name.Length ; i++)
+  {
+      Console.WriteLine(name[i]);
+  }
+  ```
+
+- 字符串拼接
+
+  ```c#
+  string str = "张三";
+  string str1;
+  str1 = str + "你好";//张三你好
+  str1 = str.Format("{0}{1}",1,"333");//张三你好1333
+  ```
+
+- 正向查找字符串位置
+
+  ```c#
+  string str = "张三在哪里";
+  int index = str.IndexOf = "在";//2 默认返回-1
+  ```
+
+- 反向查找字符串位置
+
+  ```c#
+  string str = "张三在哪里在哪里";
+  int index = str.LastIndexOf = "在";//5 默认返回-1
+  ```
+
+- 移除指定位置后的字符
+
+  ```c#
+  string str = "张三在哪里在哪里";
+  string str1 = str.Remove(4);//张三在哪在哪里
+  string str2 = str.Remove(4,4);//张三在哪  开始位置 字符个数
+  ```
+
+- 替换指定字符串
+
+  ```c#
+  string str = "张三在哪里在哪里";
+  string str1 = str.Replace("张三","李四");//李四在哪里在哪里
+  ```
+
+- 大小写转换
+
+  ```c#
+  string str = "abcdefg";
+  string str1 = str.ToUpper();//ABCDEFG
+  string str2 = str1.ToLower();//abcd
+  ```
+
+- 字符串截取
+
+  截取指定位置之后的字符串
+
+  ```c#
+  string str = "张三在哪里在哪里";
+  string str1 = str.Substring(2);//在哪里在哪里
+  string str2 = str.Substring(2,3);//在哪里 开始位置，截取个数
+  ```
+
+- 字符串切割
+
+  ```c#
+  string str = "1,2,3,4,5,6,7,8"
+  string str1 = str.Split(',');//单引号
+  for(int i ; i < str1.Length ; i++)
+  {
+      Console.WriteLine(str1[i]);//12345678
+  }
+  ```
+
+#### 6.Stringbuilder
+
+string是特殊的引用类型，每次赋值或者拼接都会分配新的内存空间，如果一个字符串经常改变那么非常浪费空间
+
+Stringbuilder是C#提供的用于处理字符串的公共类，修改字符串而不创建新的对象 ， 需要频繁修改和拼接的字符串可以使用它 ， 可以提升性能，使用前需要引用命名空间
+
+```c#
+using System;
+using System.Text; //引用命名空间
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            StringBuilder str = new StringBuilder("张三在哪里");
+            Console.WriteLine(str);
+		}
+	}
+}
+```
+
+StringBuilder在每次往里面添加时，会自动扩容
+
+```c#
+using System;
+using System.Text; //引用命名空间
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            StringBuilder str = new StringBuilder("张三在哪里");//只有9个字符 
+            Console.WriteLine(str.Capacity);//16 也就是说通过提前预留一些内存达到避免频繁每次赋值或者拼接时造成的内存浪费
+            //当超过16时，会获得32的容量（倍增）（每个编译器可能有差异），以此类推达到减少垃圾的作用
+            StringBuilder str1 = new StringBuilder("张三在哪里",100);//后一个参数是当前的最大容量
+            //实际长度
+            Console.WriteLine(str1.Length);
+		}
+	}
+}
+```
+
+增删改查替换
+
+```c#
+using System;
+using System.Text; //引用命名空间
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            StringBuilder str = new StringBuilder("张三在哪里");
+            //增
+            str.Append("在哪里");// 张三在哪里在哪里
+            str.AppendFormat("{0}{1}",1,"123");//张三在哪里在哪里1123
+            str.Insert(0,"你好，");//你好，张三在哪里在哪里1123  参数1开始位置
+            //删
+            str.Remove(0,8);//在哪里1123 参数1开始位置，参数2结束位置
+            str.Clear();//清空 容量会变化
+            //查
+            str.Append("张三在哪里");
+            Console.WriteLine(str[1]);//三
+            //改
+            str[1] = '四';//三->四
+            //替换
+            str.Replace("张","李");//李四在哪里
+            //重新赋值 先Clear再Append
+            //判断是否相等
+            //if(str == "123123")//错误
+            if(str.Equals("123123"))//正确 使用万物之父obj来判断
+            {
+                ConSole.WriteLine("相等");
+            }
+		}
+	}
+}
+```
+
+
+
+#### 7.结构体和类的区别
+
+存储上：结构体和类最大的区别是在存储空间上的 ， 因为结构体是值 ， 类是引用 ，
+
+因此他们的存储位置一个在栈上 ， 一个在堆上 ，
+
+使用上：结构体和类在使用上很类似 ， 结构体甚至可以用面向对象的思想来形容一类对象 。
+
+结构体具备着面向对象思想中封装的特性 ， 但是它**不具备继承和多态的特性** ， 因此大大减少了它的使用频率 。
+
+由于结构体不具备继承的特性 ， 所以它**不能够使用protect**访问修饰符 。
+
+> tip:
+>
+> 类和结构有以下几个基本的不同点：
+>
+> - 结构体是值类型，类是引用类型。
+> - 结构体存在栈上，类存在堆中，栈中保存的只是引用。
+> - 结构体成员不能使用protect访问修饰符，而类可以。
+> - 结构体成员变量声明无法赋予初值，而类可以。
+> - 结构不能声明无参的构造函数，而类可以。
+> - 结构体声明了有参构造函数后，默认的无参构造函数不会被顶掉。
+>
+> - 结构体不能声明析构函数，而类可以。
+>
+> - 结构不支持继承，而类可以。
+> - 结构体的构造函数中，必须为结构体所有字段赋值，类的构造函数无此限制。
+> - 结构体不能被静态static修饰（不存在静态结构体），而类可以。
+> - 结构体不能再自己内部声明和自己一样的结构体变量，而类可以。
+
+结构体可以继承接口，因为接口是行为的抽象。
+
+> 如何选择类和结构体
+>
+> 想要用继承和多态时 ， 直接淘汰结构体 ， 比如玩家 、 怪物等
+>
+> 对象时数据集合时 ， 优先考虑结构体 ， 比如位置 、 坐标等等
+>
+> 从值类型和引用类型赋值时的区别上去考虑 ， 比如经常被赋值传递的对象 ， 并且改变赋值对象 ， 原对象不想跟着变化时 ， 就用结构体 。 比如坐标 、 向量 、 旋转等等
+
+#### 8.抽象类和接口的区别
+
+相同点
+
+> 都可以被继承
+>
+> 都不能直接实例化
+>
+> 都可以包含方法申明
+>
+> 子类必须实现未实现的方法
+>
+> 都遵循里氏替换原则
+
+区别
+
+> 抽象类中可以有构造函数 ； 接口中不能
+>
+> 抽象类只能被单一继承 ； 接口可以被继承多个
+>
+> 抽象类中可以有成员变量 ； 接口中不能
+>
+> 抽象类中可以申明成员方法 ， 虚方法 ， 抽象方法 ， 静态方法 ； 接口中只能申明没有实现的抽象方法
+>
+> 抽象类方法可以使用访问修饰符 ； 接口中建议不写 ， 默认 publ 让
+
+如何选择
+
+> 表示对象的用抽象类 ， 表示行为拓展的用接口
+>
+> 不同对象拥有的共同行为 ， 我们往往可以使用接口来实现
+>
+> 举个例子 ：
+>
+> 动物是一类对象 ， 我们自然会选择抽象类 ； 而飞翔是一个行为 ， 我们自然会选择接口 。
+
+### 6.多个脚本文件
+
+### 7.Uml类图
+
+### 8.七大原则
 
 # C#进阶
 
@@ -2478,15 +3316,353 @@ class Program
 
 ### 1.简单数据结构类
 
-#### Arraylist
+#### 1.动态数组Arraylist
 
-#### Stack
+Arraylist是C#封装好的类，本质是一个**object类型的数组**，可以使用该类提供的方法进行增删改查。
 
-#### Queue
+```c#
+using System.Collections;//需要引用命名空间
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            ArrayList array = new ArrayList();
+            Console.WriteLine(str);
+            //增  存储任意对象
+            array.Add(1);
+            array.Add("nihao");
+            array.Add(true);
+            array.Add(new object());
+            ArrayList array2 = new ArrayList(); //拼接array2
+            array2.Add(123);
+            array.AddRange(array2);//从后面依次累加
+            array.Insert(1,"1234567");//将元素插到指定位置
+            //删
+            array.Remove(1);//从前往后删除指定元素
+            array.RemoveAt(2);//移除第二个位置的元素
+            array.Clear();//清空
+            //改
+            array[1] = 999;
+            //查
+            Console.WriteLine(array[0]);//得到第0个位置的元素
+            bool position = array.Contains("nihao");//查看ArrayList是否有该元素
+            int index = array.IndexOf(true);//正向查找元素，返回的是索引位置，找不到为-1
+            int index = array.LastIndexOf(true);//反向查找元素，返回的是索引位置，找不到为-1
+            //遍历
+            array.Count;//元素长度
+            array.Capacity;//容量 避免产生大量垃圾
+            for(int i = 0 ; i< array.Count ; i++)//for循环遍历
+            {
+                Console.WriteLine(array[i]);
+            }
+            foreach(var item in array)//迭代器遍历
+            {
+                Console.WriteLine(item);
+            }
+            //装箱拆箱
+            int i = 0;
+            array[0] = 1;//装箱 栈内存到堆内存
+            i = (int)array[0];//拆箱 堆内存到栈内存
+		}
+	}
+}
+```
 
-#### Hashtable
+#### 2.栈Stack
+
+Stack是C#封装好的类，它的本质也是object [ ] 数组 ， 只是封装了特殊的存储规则，stack 是栈存储容器 ， 栈是一种先进后出的数据结构
+
+先存入的数据后获取 ， 后存入的数据先获取
+
+![](../image/Snipaste_2023-05-04_13-20-27.png)
+
+```c#
+using System.Collections;//需要引用命名空间
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+        	Stack stack = new Stack();
+            //增
+            stack.Push(1);
+            stack.Push("123");
+            stack.Push(true);
+            stack.Push(new object());
+            //取 栈中没有删的概念
+            Console.WriteLine(stack.Pop());//System.Object
+            Console.WriteLine(stack.Pop());//True
+            //查 只能查看栈顶的元素
+            Console.WriteLine(stack.Peek());//123
+            Console.WriteLine(stack.Peek());//123
+            bool have = stack.Contains(1);//true
+            //改 无法改变其中的元素，只可以压和弹
+            stack.Clear();//清空
+            stack.Push(1);
+            stack.Push(1.2f);
+            stack.Push("哈哈哈");
+            //遍历
+            Console.WriteLine(stack.Count);//3 
+            foreach(var item in stack)//foreach遍历 是查看不是弹出 从栈顶到栈底
+            {
+                Console.WriteLine(item);
+            }
+            object[] o = stack.ToArray();//转换为object数组后遍历 从栈顶到栈底
+            for (int i = 0; i < o.Count; i++)
+            {
+            	Console.WriteLine(o[i]);
+            }
+            while( stack.Count > 0 )//循环弹栈
+            {
+                object o = stack.Pop();
+            }
+            //装箱拆箱
+            int i = 0;
+            stack.Push(i);//装箱 栈内存到堆内存
+            stack.Pop();//拆箱 堆内存到栈内存
+        }
+	}
+}
+```
+
+#### 3.队列Queue
+
+Stack是C#封装好的类,它的本质也是object[]数组 ， 只是封装了特殊的存储规则，Queue 是队列存储容器，队列是一种先进先出的数据结构
+
+先存入的数据先获取 ， 后存入的数据后获取
+
+![](../image/Snipaste_2023-05-04_13-58-08.png)
+
+```c#
+using System.Collections;//需要引用命名空间
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            Quene quene = new Quene();
+            //增
+            quene.Enquene(1);
+            quene.Enquene("123");
+            quene.Enquene(true);
+            quene.Enquene(new object());
+            //取
+            Console.WriteLine(quene.Dequene());//1
+            Console.WriteLine(quene.Dequene());//123
+            //查
+            Console.WriteLine(quene.Peek());//true
+            Console.WriteLine(quene.Peek());//true
+            bool have = quene.Contains(true);//true
+            //改 只能清空后改变
+            quene.Clear();
+            quene.Enquene(1);
+            quene.Enquene(2);
+            quene.Enquene(3);
+            //遍历
+            Console.WriteLine(quene.Count);//3
+            foreach(object item in quene)//foreach遍历 是查看不是取出 从队首到队尾
+            {
+                Console.WriteLine(item);
+            }
+            object[] o = quene.ToArray();//转换为object数组后遍历 从队首到队尾
+            for (int i = 0; i < o.Count; i++)
+            {
+            	Console.WriteLine(o[i]);
+            }
+            while( quene.Count > 0 )//循环出列
+            {
+                object o = quene.Dequene();
+            }
+            //装箱拆箱
+            int i = 0;
+            quene.Enquene(i);//装箱 栈内存到堆内存
+            stack.Dequene();//拆箱 堆内存到栈内存
+        }
+	}
+}
+```
+
+#### 4.哈希表Hashtable
+
+Hashtable （ 又称散列表 ） 是基于键的哈希代码组织起来的 键 / 值 对，它的主要作用是高数据查询的效率
+
+使用键来访问集合中的元素
+
+```c#
+using System.Collections;//需要引用命名空间
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+        	Hashtable hashtable = new Hashtable();
+            //增 键是唯一的
+            hashtable.Add(1,1);//键 1 ,值 1
+            hashtable.Add(true,"123");//键true ,值 123 
+            hashtable.Add(false,false);//键false ,值 false
+            //删 只能通过键去删除
+            hashtable.Remove(1);//通过删除键 来删除值 如果没有键则无反应
+            hashtable.Clear();//清空
+            
+            hashtable.Add(1,1);
+            hashtable.Add(2,2);
+            hashtable.Add("year",3);
+            hashtable.Add(true,3);
+            //查
+            Console.WriteLine(hashtable[true]);//3 通过键查值找不到返回空
+            bool have = hashtable.Contains("year");//true 键查找
+            bool havekey = hashtable.ContainsKey("year");//true 键查找
+            bool havevalue = hashtable.ContainsValue("123");//true 值查找
+            //改 只能改键对应的值 无法修改键
+            hashtable[true] = 100.9f; 
+            //遍历
+            Console.WriteLine(hashtable.Count);//对数
+            //遍历所有键
+            foreach(object item in hashtable.Keys)//注意要加Keys
+            {
+                Console.WriteLine("键："item);
+                Console.WriteLine("值："hashtable[item]);
+            }
+            //遍历所有值
+            foreach(object item in hashtable.Values)//注意要加Values
+            {
+                Console.WriteLine("值："item);
+            }
+            //键值对一起遍历
+            foreach(DictionaryEntry item in hashtable)//注意DictionaryEntry
+            {
+                Console.WriteLine("键："item.Key"+值："item.Value);
+            }
+            //迭代器遍历
+            IDictionaryEnumerator myEnumerator = hashtable.GetEnumerator();
+            bool flag = myEnumerator.MoveNext();
+            while(flag) // 判断之后有没有
+            {
+                Console.WriteLine("键：{0} 值：{1}",myEnumerator.Key,myEnumerator.Value);
+                flag = myEnumerator.MoveNext();
+            }
+            //装箱拆箱
+            int i = 0;
+            hashtable.Add(index,i);////装箱 栈内存到堆内存
+            i = hashtable[index];//拆箱 堆内存到栈内存
+        }
+	}
+}
+```
 
 ### 2.泛型
+
+泛型实现了类型参数化 ， 达到代码重用目的，通过类型参数化来实现同一份代码上操作多种类型，泛型相当于类型占位符，定义类或方法时使用替代符代表变量类型，当真正使用类或者方法时再具体指定类型
+
+泛型分类
+
+泛型类和泛型接口
+
+基本语法：
+
+class 类名 < 泛型占位字母 >
+
+interface 接口名 〈 泛型占位字母 >
+
+泛型函数
+
+基本语法 ： 函数名 < 泛型占位字母 > （ 参数列表 ）
+
+注意 ： 泛型占位字母可以有多个 ， 用逗号分开
+
+```c#
+using System;
+namespace Test
+{
+    class TestClass<T>//泛型类（单参）
+	{
+    	public T value;
+	}
+    class TestClass2<A,B>//泛型类（多参）
+	{
+    	public A aValue;
+        public B bValue;
+	}
+    class Test2
+    {
+        public void TestFun<T>(T value)//泛型方法(单参)
+        {
+            Console.WriteLine(value);
+        }
+        public void TestFun<T,U,V>(T t,U u,V v)//泛型方法(多参)
+        {
+        }
+        public void TestFun1<T>()//泛型方法(逻辑处理)
+        {
+        	T t = default(T);
+        }
+        public T TestFun1<T>()//泛型方法(返回值)
+        {
+        	return default(T);
+        }
+    }
+    class Test2<T>//泛型类中的泛型方法 与Test2算作两个类，泛型也看做名字的一部分
+    {
+    	public void Test<U>(U u)//泛型类中的泛型方法
+    	{
+    		
+    	}
+    }
+    interface TestInterface<T>//泛型接口
+    {
+        T value
+        {
+            get;
+            set;
+        }
+    }
+    class Test:TestInterface<int>//继承泛型接口
+    {
+        public int num;
+        public int value
+        {
+            get
+            {
+                return 0;
+            }
+            set
+            {
+            	num = value;
+            }
+        }
+    }
+    class Program
+	{
+    	public static void Main(string[] args)
+		{
+            //泛型类（单参）
+            TestClass<int> t = new TestClass<int>();
+            t.value = 10;//int类型
+            TestClass<float> f = new TestClass<float>();
+            f.value = 10.0f;//float类型
+            //泛型类（多参）
+            TestClass2<int,string> intstring = new TestClass2<int,string>();
+            intstring.aValue = 10;
+            intstring.bValue = "123";
+            //泛型方法
+            Test2 tt = new Test2();
+            tt.TestFun<string>("nihao");
+            //不同类型对象的相同逻辑处理就可以选择泛型
+        }
+    }
+}
+```
+
+
 
 ### 3.常用泛型数据结构类
 
