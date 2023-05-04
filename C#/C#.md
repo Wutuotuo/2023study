@@ -3662,6 +3662,118 @@ namespace Test
 }
 ```
 
+泛型约束
+
+让泛型的类型有一定限制，关键字where，泛型约束一共有六种
+
+```c#
+using System;
+namespace Test
+{
+    //值类型 where 泛型字母:struct
+	class Test1<T> where T:struct
+	{
+		public T value;
+		public void TestFun<K>(K k) where K:struct
+    	{
+        
+    	}
+	}
+    //引用类型 where 泛型字母:class 
+    class Test2<T> where T:class
+	{
+		public T value;
+		public void TestFun<K>(K k) where K:class
+    	{
+        
+    	}
+	}
+    //存在无参公共构造函数 where 泛型字母:new()
+    class Test3<T> where T:new() //必须是具有公共构造函数的非抽象函数类型
+	{
+		public T value;
+	}
+    //类约束 where 泛型字母:类名
+    class Test4<T> where T:Test1//某个类本身或者其派生类
+	{
+		public T value;
+	}
+    //接口约束 where 泛型字母:接口名
+    class Test5<T> where T:IFly
+	{
+		public T value;
+	}
+    //另一个泛型约束  where 泛型字母:另一个泛型字母
+    class Test6<T,U> where T:U//另一个泛型类型本身或者派生类型 T要么和U相同要么是U的派生
+	{
+		public T value;
+        public void TestFun<K,V>(K k) where K:V
+    	{
+        
+    	}
+	}
+    //------------测试类------------
+    class Test1//用于Test3 Test4测试 
+    {
+        public Test1()
+        {
+        }
+    }
+    class Test2:Test1//用于Test4测试 
+    {
+    }
+    class Test3//用于Test4测试 
+    {
+    }
+    interface IFly//用于Test5测试 
+    {
+    }
+    class Test4:IFly//用于Test5测试 
+    {
+    }
+    //------------测试类------------
+	class Program
+		{
+    		public static void Main(string[] args)
+			{
+                //值类型
+                Test1<int> t1 = new Test1<int>();
+                t1.TestFun<float>(1.3f);
+                //引用类型
+                Test2<Random> t2 = new Test2<Random>();
+                t2.value = new Random(); 
+                //存在无参公共构造函数
+                Test3<Test1> t3 = new Test3<Test1>();
+                //某个类本身或者其派生类
+                Test4<Test1> t4 = new Test4<Test1>();
+                Test4<Test2> t4 = new Test4<Test2>();
+                //Test4<Test3> t4 = new Test4<Test3>();错误，必须是Test1类本身或者其派生类
+                //某个接口的派生类型
+                Test5<IFly> t5 = new Test5<IFly>();//接口本身或者派生接口
+                t5.value = Test4;//派生类
+                //另一个泛型类型本身或者派生类型
+                Test6<Test4,IFly> t6 = new Test6<Test4,IFly>();
+        	}
+		}
+}
+```
+
+约束的组合使用
+
+```c#
+class Test7<T> where T:class,new() //T必须是引用类型且具有无参的构造函数
+{
+}
+```
+
+多个泛型有约束
+
+```c#
+class Test7<T,K> where T:class,new() where K:struct //关键字where
+{
+}
+```
+
 
 
 ### 3.常用泛型数据结构类
