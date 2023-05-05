@@ -72,8 +72,6 @@ namespace test
     Press any key to continue . . . 
 ```
 
-
-
 ### 4.变量
 
 ```
@@ -2786,7 +2784,7 @@ class Program
 
 ### 5.面对对象相关知识点补充
 
-#### 1.命名空间
+#### （1）.命名空间
 
 命名空间是用来组织和重用代码的
 
@@ -2896,7 +2894,7 @@ class Program
   }
   ```
 
-#### 2.关于修饰类的访问修饰符
+#### （2）.关于修饰类的访问修饰符
 
   命名空间中的类默认为internal
 
@@ -2910,7 +2908,7 @@ class Program
 
   partial 分部类
 
-#### 3.万物之父中的方法
+#### （3）.万物之父中的方法
 
 - object中的静态方法
 
@@ -3060,7 +3058,7 @@ class Program
 
   该方法非常常用 。 当我们调用打印方法时 ， 默认使用的就是对象的 Tostring 方法后打印出来的内容 。
 
-#### 5.字符串String
+#### （4）.字符串String
 
 - 字符串指定位置获取
 
@@ -3144,7 +3142,7 @@ class Program
   }
   ```
 
-#### 6.Stringbuilder
+#### （5）.Stringbuilder
 
 string是特殊的引用类型，每次赋值或者拼接都会分配新的内存空间，如果一个字符串经常改变那么非常浪费空间
 
@@ -3228,7 +3226,7 @@ namespace Test
 
 
 
-#### 7.结构体和类的区别
+#### （6）.结构体和类的区别
 
 存储上：结构体和类最大的区别是在存储空间上的 ， 因为结构体是值 ， 类是引用 ，
 
@@ -3268,7 +3266,7 @@ namespace Test
 >
 > 从值类型和引用类型赋值时的区别上去考虑 ， 比如经常被赋值传递的对象 ， 并且改变赋值对象 ， 原对象不想跟着变化时 ， 就用结构体 。 比如坐标 、 向量 、 旋转等等
 
-#### 8.抽象类和接口的区别
+#### （7）.抽象类和接口的区别
 
 相同点
 
@@ -3316,7 +3314,7 @@ namespace Test
 
 ### 1.简单数据结构类
 
-#### 1.动态数组Arraylist
+#### （1）.动态数组Arraylist
 
 Arraylist是C#封装好的类，本质是一个**object类型的数组**，可以使用该类提供的方法进行增删改查。
 
@@ -3330,7 +3328,6 @@ namespace Test
 		public static void Main(string[] args)
 		{
             ArrayList array = new ArrayList();
-            Console.WriteLine(str);
             //增  存储任意对象
             array.Add(1);
             array.Add("nihao");
@@ -3344,16 +3341,20 @@ namespace Test
             array.Remove(1);//从前往后删除指定元素
             array.RemoveAt(2);//移除第二个位置的元素
             array.Clear();//清空
+            //
+            array.Add(1);
+            array.Add("nihao");
+            array.Add(true);
             //改
             array[1] = 999;
             //查
             Console.WriteLine(array[0]);//得到第0个位置的元素
             bool position = array.Contains("nihao");//查看ArrayList是否有该元素
             int index = array.IndexOf(true);//正向查找元素，返回的是索引位置，找不到为-1
-            int index = array.LastIndexOf(true);//反向查找元素，返回的是索引位置，找不到为-1
+            index = array.LastIndexOf(true);//反向查找元素，返回的是索引位置，找不到为-1
             //遍历
-            array.Count;//元素长度
-            array.Capacity;//容量 避免产生大量垃圾
+            int count = array.Count;//元素长度
+            int capacity = array.Capacity;//容量 避免产生大量垃圾
             for(int i = 0 ; i< array.Count ; i++)//for循环遍历
             {
                 Console.WriteLine(array[i]);
@@ -3363,15 +3364,15 @@ namespace Test
                 Console.WriteLine(item);
             }
             //装箱拆箱
-            int i = 0;
+            int num = 0;
             array[0] = 1;//装箱 栈内存到堆内存
-            i = (int)array[0];//拆箱 堆内存到栈内存
+            num = (int)array[0];//拆箱 堆内存到栈内存
 		}
 	}
 }
 ```
 
-#### 2.栈Stack
+#### （2）.栈Stack
 
 Stack是C#封装好的类，它的本质也是object [ ] 数组 ， 只是封装了特殊的存储规则，stack 是栈存储容器 ， 栈是一种先进后出的数据结构
 
@@ -3413,24 +3414,24 @@ namespace Test
                 Console.WriteLine(item);
             }
             object[] o = stack.ToArray();//转换为object数组后遍历 从栈顶到栈底
-            for (int i = 0; i < o.Count; i++)
+            for (int i = 0; i < o.Length; i++)
             {
             	Console.WriteLine(o[i]);
             }
             while( stack.Count > 0 )//循环弹栈
             {
-                object o = stack.Pop();
+                object p = stack.Pop();
             }
             //装箱拆箱
-            int i = 0;
-            stack.Push(i);//装箱 栈内存到堆内存
+            int num = 0;
+            stack.Push(num);//装箱 栈内存到堆内存
             stack.Pop();//拆箱 堆内存到栈内存
         }
 	}
 }
 ```
 
-#### 3.队列Queue
+#### （3）.队列Queue
 
 Stack是C#封装好的类,它的本质也是object[]数组 ， 只是封装了特殊的存储规则，Queue 是队列存储容器，队列是一种先进先出的数据结构
 
@@ -3447,49 +3448,49 @@ namespace Test
 	{
 		public static void Main(string[] args)
 		{
-            Quene quene = new Quene();
+            Queue queue = new Queue();
             //增
-            quene.Enquene(1);
-            quene.Enquene("123");
-            quene.Enquene(true);
-            quene.Enquene(new object());
+            queue.Enqueue(1);
+            queue.Enqueue("123");
+            queue.Enqueue(true);
+            queue.Enqueue(new object());
             //取
-            Console.WriteLine(quene.Dequene());//1
-            Console.WriteLine(quene.Dequene());//123
+            Console.WriteLine(queue.Dequeue());//1
+            Console.WriteLine(queue.Dequeue());//123
             //查
-            Console.WriteLine(quene.Peek());//true
-            Console.WriteLine(quene.Peek());//true
-            bool have = quene.Contains(true);//true
+            Console.WriteLine(queue.Peek());//true
+            Console.WriteLine(queue.Peek());//true
+            bool have = queue.Contains(true);//true
             //改 只能清空后改变
-            quene.Clear();
-            quene.Enquene(1);
-            quene.Enquene(2);
-            quene.Enquene(3);
+            queue.Clear();
+            queue.Enqueue(1);
+            queue.Enqueue(2);
+            queue.Enqueue(3);
             //遍历
-            Console.WriteLine(quene.Count);//3
-            foreach(object item in quene)//foreach遍历 是查看不是取出 从队首到队尾
+            Console.WriteLine(queue.Count);//3
+            foreach(object item in queue)//foreach遍历 是查看不是取出 从队首到队尾
             {
                 Console.WriteLine(item);
             }
-            object[] o = quene.ToArray();//转换为object数组后遍历 从队首到队尾
-            for (int i = 0; i < o.Count; i++)
+            object[] o = queue.ToArray();//转换为object数组后遍历 从队首到队尾
+            for (int i = 0; i < o.Length; i++)
             {
             	Console.WriteLine(o[i]);
             }
-            while( quene.Count > 0 )//循环出列
+            while( queue.Count > 0 )//循环出列
             {
-                object o = quene.Dequene();
+                object p = queue.Dequeue();
             }
             //装箱拆箱
-            int i = 0;
-            quene.Enquene(i);//装箱 栈内存到堆内存
-            stack.Dequene();//拆箱 堆内存到栈内存
+            int num = 0;
+            queue.Enqueue(num);//装箱 栈内存到堆内存
+            queue.Dequeue();//拆箱 堆内存到栈内存
         }
 	}
 }
 ```
 
-#### 4.哈希表Hashtable
+#### （4）.哈希表Hashtable
 
 Hashtable （ 又称散列表 ） 是基于键的哈希代码组织起来的 键 / 值 对，它的主要作用是高数据查询的效率
 
@@ -3778,13 +3779,350 @@ class Test7<T,K> where T:class,new() where K:struct //关键字where
 
 ### 3.常用泛型数据结构类
 
+#### （1）列表List
+
+- List是C#封装好的类，本质是一个**可变类型的泛型数组**。
+
+  ```c#
+  using System.Collections.Generic;//需要引用命名空间
+  using System;
+  namespace Test
+  {
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+              //声明
+  			List<int> list1 = new List<int>();
+              List<int> list2 = new List<int>();
+              //增
+              list1.Add(1);
+              list1.Add(2);
+              list2.Add(3);
+              list1.AddRange(list2);
+              list1.Insert(0,999);
+              //删
+              list1.Remove(1);//删除元素1
+              list1.RemoveAt(0);//删除第一个元素
+              list1.Clear();//清空
+              //
+              list1.Add(1);
+              list1.Add(2);
+              //查
+              //Console.WriteLine(list1[0]);//得到指定位置的元素
+              bool have = list1.Contains(1);//查看元素是否存在
+              int index = list1.IndexOf(2);//正向返回查找值的下标
+              int lastIndex = list1.LastIndexOf(2);//反向返回查找值的下标
+              //改
+              list1[0] = 99;
+              //遍历
+              int length = list1.Count;//长度
+              int capacity = list1.Capacity;//容量
+              for (int i = 0 ; i < list1.Count; i++)
+              {
+                  Console.WriteLine(list1[i]);
+              }
+              foreach (var item in list1)
+              {
+                  Console.WriteLine(item);
+              }
+          }
+      }
+  }
+  ```
+
+  
+
+#### （2）字典Dictionary
+
+- 可以将Dictionary理解为拥有泛型的Hashtable，只不过键值对类型从object变成了可以自己制定的泛型
+
+```c#
+using System.Collections.Generic;//需要引用命名空间
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            //声明
+            Dictionary<int,string> dictionary = new Dictionary<int,string>();//键int 值string
+            //增
+            dictionary.Add(1,"123");
+            dictionary.Add(2,"456");
+            dictionary.Add(3,"789");
+            //删
+            dictionary.Remove(1);
+            dictionary.Remove(4);//删除没有的键没有反应
+            dictionary.Clear();//清空
+            //
+            dictionary.Add(1,"123");
+            dictionary.Add(2,"456");
+            dictionary.Add(3,"789");
+            //查
+            Console.WriteLine(dictionary[1]);//123 通过键查看值
+            //Console.WriteLine(dictionary[4]);//返回不存在的键会报错
+            bool haveKey = dictionary.ContainsKey(1);//true 是否存在键为1的
+            bool haveValue = dictionary.ContainsValue("123");//true 是否存在值为123的
+            //改
+            dictionary[1] = "555";
+            //遍历
+            int index = dictionary.Count;//长度
+            foreach(var item in dictionary.Keys)//foreach遍历键值
+            {
+                Console.WriteLine(item);
+                Console.WriteLine(dictionary[item]);
+            }
+            foreach(var item in dictionary.Values)//遍历值
+            {
+                Console.WriteLine(item);
+            }
+            foreach (KeyValuePair<int,string> item in dictionary)//KeyValuePair遍历键值
+            {
+            	Console.WriteLine("键{0},值{1}",item.Key,item.Value);
+            }
+        }
+    }
+}
+```
+
+
+
+#### （3）顺序存储和链式存储
+
+数据结构， 就是人定义的    **存储数据**    和    **表示数据之间关系**    的规则，常见的数据结构有数组 、 栈 、 队列 、 链表 、 树 、 图 、 堆 、 散列表等
+
+![](../image/Snipaste_2023-05-05_17-57-47.png)
+
+顺序存储 ：
+
+用一组地址连续的存储单元依次存储线性表的各个数据元素
+
+数组 、 stack 、 Queue 、 List 、 ArrayList是顺序存储
+
+只是数组 、 Stack 、 Queue 的组织规则不同而已
+
+链式存储 〈 链接存储 ） ：
+
+用一组任意的存储单元存储线性表中的各个数据元素
+
+单向链表 、 双向链表 、 循环链表是链式存储
+
+```c#
+using System;
+namespace Test
+{
+	class LinkNode<T>//节点
+	{
+		public T value;
+   	 	public LinkNode<T> nextNode;
+        public LinkNode(T value)
+        {
+            this.value = value;
+            this.nextNode = null;
+        }
+	}
+	class LinderList<T>//单链表
+	{
+		public LinkNode<T> head;//头结点
+		public LinkNode<T> tail;//尾节点
+		public void AddTail(T value)//尾插法
+		{
+			LinkNode<T> newNode = new LinkNode<T>(value);
+			if(head == null)//如果当前链表为空
+			{
+				head = newNode;
+				tail = newNode;
+			}
+			else
+			{
+				tail.nextNode = newNode;//让尾的下一个指向新节点
+				tail = newNode;//新节点变成新的尾巴
+			}
+		}
+		public void RemoveNode(T value)
+		{
+			if(head == null)
+			{
+				return;
+			}
+			if(head.value.Equals(value))
+			{
+				head = head.nextNode;//头结点变为下一个节点
+				if(head == null)//如果删除后头结点为空
+				{
+					tail = null;
+				}
+				return;
+			}
+			LinkNode<T> node = head;
+			while(node != null)
+			{
+				if(node.nextNode.value.Equals(value))//如果下一个节点的值与要删除的值相同
+				{
+					node.nextNode = node.nextNode.nextNode;//那么指向下下个节点
+					break;
+				}
+				node = node.nextNode;
+			}
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+		LinderList<int> linderList1 = new LinderList<int>();
+		linderList1.AddTail(1);
+		linderList1.AddTail(2);
+		linderList1.AddTail(3);
+		linderList1.AddTail(4);
+		linderList1.AddTail(5);
+		linderList1.RemoveNode(1);//删除头结点
+		linderList1.RemoveNode(3);//删除中间节点
+		linderList1.RemoveNode(5);//删除尾节点
+		LinkNode<int> node = linderList1.head;
+		while(node!= null)
+		{
+			Console.WriteLine(node.value);
+			node = node.nextNode;
+		}
+		}
+	}
+}
+```
+
+
+
+#### （4）泛型双向链表Linkedlist
+
+Linkedlist是C#封装好的类，他的本质是一个可变类型的泛型双向链表
+
+```c#
+using System.Collections.Generic;//需要引用命名空间
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            //声明
+            LinkedList<int> linkedList = new LinkedList<int>();
+            //链表对象需要掌握两个类，一个是链表本身LinkedList，一个是链表节点类LinkedListNode
+            //增
+            linkedList.AddFirst(10);//在链表头部添加元素
+            linkedList.AddLast(20);//在链表尾部添加元素
+            linkedList.AddLast(3);//在链表尾部添加元素
+            linkedList.AddAfter(linkedList.Find(3),20);//在从头开始查找第一个节点值3后添加元素20
+            linkedList.AddBefore(linkedList.Find(10),1);//在从头开始查找第一个节点值10后添加元素1
+            linkedList.AddLast(3);//在链表尾部添加元素
+            Console.WriteLine("-------初始值------");
+            LinkedListNode<int> node = linkedList.First;
+            while (node != null) 
+            {
+            	Console.WriteLine(node.Value);
+            	node = node.Next;
+            }
+            Console.WriteLine("-------------------");
+            //删
+            linkedList.RemoveFirst();//移除头结点
+            linkedList.RemoveLast();//移除尾结点
+            linkedList.Remove(20);//移除从头开始第一个等于该值节点
+            Console.WriteLine("---移除头尾和一个20--");
+            node = linkedList.First;
+            while (node != null) 
+            {
+            	Console.WriteLine(node.Value);
+            	node = node.Next;
+            }
+            Console.WriteLine("-------------------");
+            linkedList.Clear();//清空链表
+            //
+            linkedList.AddLast(1);//在链表尾部添加元素
+            linkedList.AddLast(2);//在链表尾部添加元素
+            linkedList.AddLast(3);//在链表尾部添加元素
+			linkedList.AddLast(4);//在链表尾部添加元素
+			linkedList.AddLast(5);//在链表尾部添加元素
+			Console.WriteLine("-------新值------");
+            node = linkedList.First;
+            while (node != null) 
+            {
+            	Console.WriteLine(node.Value);
+            	node = node.Next;
+            }
+            Console.WriteLine("-------------------");
+            //查
+            LinkedListNode<int> first = linkedList.First;
+            LinkedListNode<int> last = linkedList.Last;
+            Console.WriteLine("first:{0} , last:{1}",first.Value,last.Value);
+            Console.WriteLine("链表中存在2：{0}",linkedList.Contains(2));
+            node = linkedList.Find(2);//存在后可以返回该节点
+			Console.WriteLine("链表中存在6：{0}",linkedList.Contains(6));
+			//node = linkedList.Find(6);//若不存在则会报错
+            //改
+            linkedList.Find(2).Value = 4;//先得到节点，再修改值
+            //遍历
+            Console.WriteLine("-----foreach遍历---");
+            foreach (var item in linkedList) //通过迭代器处理可以直接得到里面的值
+            {
+            	Console.WriteLine(item);
+            }
+            Console.WriteLine("-------------------");
+            Console.WriteLine("---从头节点遍历-----");
+            LinkedListNode<int> head = linkedList.First;
+            while (head != null) 
+            {
+            	Console.WriteLine(head.Value);
+            	head = head.Next;
+            }
+            Console.WriteLine("-------------------");
+            Console.WriteLine("---从尾节点遍历-----");
+            LinkedListNode<int> tail = linkedList.Last;
+            while (tail != null) 
+            {
+            	Console.WriteLine(tail.Value);
+            	tail = tail.Previous;
+            }
+            Console.WriteLine("-------------------");
+        }
+    }
+}
+```
+
+#### （5）泛型栈和队列
+
+```c#
+using System.Collections.Generic;//需要引用命名空间
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+            //声明 命名空间using System.Collections.Generic;
+            //使用上和Stack与Queue相同
+            Stack<int> stack = new Stack<int>;
+            Queue<int> queue = new Queue<int>;
+		}
+	}
+}
+```
+
+
+
 ### 4.委托和事件
 
-### 5. 匿名函数
+#### （1）委托
 
-### 6.Lambad表达式
+#### （2）事件
 
-### 7.List排序d
+#### （3）匿名函数
+
+#### （4）Lamada表达式
+
+### 5.List排序
 
 ### 8.协变逆变
 
