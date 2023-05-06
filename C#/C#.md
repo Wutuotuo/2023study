@@ -4116,6 +4116,108 @@ namespace Test
 
 #### （1）委托
 
+委托是函数方法的容器，可以理解为函数方法的变量类型，用来存储传递函数方法
+
+委托的本质是一个类，是用来定义函数方法的类型（返回值和参数的类型）
+
+关键字delegate
+
+```c#
+using System.Collections.Generic;//需要引用命名空间
+using System;
+namespace Test
+{
+	//委托
+    //访问修饰符 delegate 返回值 委托名(参数列表);
+    //更多的写到namespace中，也可以写到类里面
+    delegate void MyFun();//无参无返回值的函数容器
+    //当访问修饰符不写时为public
+    public delegate int MyFun1(int a);//不能重名无法重载
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//无参
+			//方式一
+            MyFun f1 = new MyFun(Fun);//参数为符合条件的函数方法名 
+            Console.WriteLine("-方法一-");
+            f1.Invoke();//调用委托中的函数
+            //方式二
+            Console.WriteLine("-方法二-");
+            MyFun f2 = Fun;//不加括号
+            f2();
+            //含参
+            Console.WriteLine("-方法一-");
+            MyFun1 f3 = new MyFun1(Fun2);
+            Console.WriteLine(f3.Invoke(1));
+            Console.WriteLine("-方法二-");
+            MyFun1 f4 = Fun2;
+            Console.WriteLine(f4(1));
+            //多播
+            Console.WriteLine("--多播委托--");
+            MyFun ff = new MyFun(Fun);
+            ff += Fun1;//委托变量存储多个函数 并按添加的顺序执行
+            ff.Invoke();
+            //移除指定函数
+            ff -= Fun1;
+            //清空函数
+            ff = null;
+            //使用系统自带的委托,使用时必须引用using System命名空间
+            Console.WriteLine("--系统委托Action--");//Action无返回值的委托
+            Action action = null;//Action委托无参数委托
+            action += Fun1;
+            action.Invoke();
+            Action<string,int> action2 = null;//Action泛型n个参数委托（n<=16）
+            action2 += Fun4;
+            action2.Invoke("nihao",123);
+            Console.WriteLine("--系统委托Func--");//Func泛型有返回值委托
+            Func<string> func = null;//Func泛型无参数sting返回值委托
+            func += Fun3;
+            Console.WriteLine(func.Invoke());
+            Func<int,int> func2 = null;//Func泛型前面参数，后面返回值
+            func2 += Fun2;
+            func2.Invoke(16);
+		}
+		static public void Fun()
+		{
+			Console.WriteLine("void Fun");
+		}
+		static public void Fun1()
+		{
+			Console.WriteLine("void Fun1");
+		}
+		static public int Fun2(int value)
+		{
+			Console.Write("int Fun2：{0}",value);
+			return value;
+		}
+		static public string Fun3()
+		{
+			return "string Fun3";
+		}
+		static public void Fun4(string s,int i)
+		{
+			Console.WriteLine("void Fun4 string:{0},int:{1}",s,i);
+		}
+	}
+	class Test //可以在类中委托
+	{
+		public MyFun fun1;
+		public MyFun1 fun2;
+		public void AddMyFun(MyFun fun1,MyFun1 fun2)
+		{
+			this.fun1 += fun1;
+			this.fun2 += fun2;
+		}
+		public void RemoveMyFun(MyFun fun1,MyFun1 fun2)
+		{
+			this.fun1 -= fun1;
+			this.fun2 -= fun2;                        	
+		}                        
+	}
+}
+```
+
 #### （2）事件
 
 #### （3）匿名函数
