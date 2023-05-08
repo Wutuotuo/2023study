@@ -4123,7 +4123,6 @@ namespace Test
 关键字delegate
 
 ```c#
-using System.Collections.Generic;//需要引用命名空间
 using System;
 namespace Test
 {
@@ -4220,7 +4219,166 @@ namespace Test
 
 #### （2）事件
 
+事件是一种特殊的委托，事件是委托的安全包裹，让委托的使用更具有安全性
+
+```c#
+using System;
+namespace Test
+{
+	//访问修饰符 event 委托类型 事件名；
+	//只能作为成员变量存在类，接口和结构体中 和委托用法相同
+	//相比于委托 事件不能在类的外部赋值与调用
+	class Test
+	{
+		//委托成员变量 用于存储函数
+		public Action myFun;
+		//事件成员变量 用于存储函数
+		public event Action myEvent;
+		public Test()
+		{
+			myFun = TestFun;
+			myFun += TestFun;
+			myFun -= TestFun;
+			myFun();
+			myFun.Invoke();
+			myFun = null;
+			myEvent = TestFun;
+			myEvent += TestFun;
+			myEvent -= TestFun;
+			myEvent();
+			myEvent.Invoke();
+			myEvent = null;
+		}
+		public void TestFun()
+		{
+			Console.WriteLine("NoProblem");
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			Test test = new Test();
+			//委托可以在外部赋值
+			test.myFun = null;
+			test.myFun = TestFun;
+			//事件不能再外部赋值
+			//test.myEvent =null;//报错
+			//test.myEvent =TestFun;//报错
+			//不能赋值但可以通过加减添加或者移除记录的函数
+			test.myEvent += TestFun;
+			//委托可以在外部调用
+			test.myFun();
+			test.myFun.Invoke();
+			//事件不可以;
+			//test.myEvent();//报错
+			//test.myEvent.Invoke();//报错
+		}
+		static public void TestFun()
+		{
+			Console.WriteLine("MainFunNoProblem");
+		}
+	}
+}
+```
+
+> - 为什么有事件
+>
+> 防止外部随意置空委托
+>
+> 防止外部随意调用委托
+>
+> - 区别
+>
+> 事件不能再外部使用赋值 `=` 符号 ， 只能使用 `+` `-` 委托哪里都能用。
+>
+> 事件不能再外部执行，委托哪里都能执行。
+>
+> 事件不能作为函数中的临时变量 委托可以。
+
 #### （3）匿名函数
+
+没有名字的函数，主要是配合事件与委托进行使用
+
+```c#
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//声明匿名函数 
+			//无参无返回
+			Action a1 = delegate()
+			{
+				Console.WriteLine("无参无返回匿名函数");
+			};
+			//只有函数容器调用时才会执行函数代码
+			a1.Invoke();
+			//有参无返回
+			Action<int,string> a2 = delegate(int i,string s)
+			{
+				Console.WriteLine("有参有返回匿名函数{0}{1}",i,s);
+			};
+			a2(520,"你好");
+			//有返回值无参
+			Func<string> f1 = delegate()
+			{
+				return "有返回值无参匿名函数";
+			};
+			Console.WriteLine(f1.Invoke());
+			//有返回值有参
+			Func<string,string> f2 = delegate(string s)
+			{
+				return s;
+			};
+			Console.WriteLine("有返回值有参匿名函数"+f2.Invoke("我好"));
+			//经常用在随参数传入时
+			Test t = new Test();
+			t.doSomething("你好",delegate(){Console.WriteLine("随参数传入的匿名函数");});
+			t.doSomething("随参数传入的匿名函数是a1",a1);
+			//也可以分部写匿名函数
+			Action ac = t.GetFun();
+			ac();
+			
+			t.GetFun()();//等于上面的代码 一步调用
+			//匿名函数的缺点
+			//不记录无法单独移除
+			Action a3 = delegate()
+			{
+				Console.WriteLine("匿名函数1");
+			};
+			a3 += delegate()
+			{
+				Console.WriteLine("匿名函数2");
+			};
+			a3();
+			//因为匿名函数没有名字，所以没办法指定移除某个匿名函数
+			a3 -= delegate()//新函数，并非上方的1
+			{
+				Console.WriteLine("匿名函数1");
+			};
+			a3();
+		 }
+	}
+	class Test
+	{
+		public void doSomething(string s, Action fun)
+		{
+			Console.WriteLine("执行了一段代码{0}",s);
+			fun();
+		}
+		public Action GetFun()
+		{
+			return delegate()
+			{
+				Console.WriteLine("我只是想返回一个函数？");//返回匿名函数
+			};
+		}
+	}
+}
+```
 
 #### （4）Lamada表达式
 
