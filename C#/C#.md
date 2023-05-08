@@ -209,7 +209,7 @@ C# 允许定义其他值类型的变量，比如 **enum**，也允许定义引�
 
   ```c#
   //强制转换 double 为 int
-  i = (**int**)d;
+  i = (int)d;
   Console.WriteLine(i);
   Console.ReadKey();
   ```
@@ -241,16 +241,16 @@ C# 提供了下列内置的类型转换方法：
  **实例**
 
 ```c#
-**namespace** TypeConversionApplication
+namespace TypeConversionApplication
  {
-   **class** StringConversion
+   class StringConversion
    {
-     **static** **void** Main(**string**[] args)
+     static void Main(string[] args)
      {
-       **int** i = 75;
-       **float** f = 53.005f;
-       **double** d = 2345.7652;
-       **bool** b = **true**;
+       int i = 75;
+       float f = 53.005f;
+       double d = 2345.7652;
+       bool b = true;
  
        Console.WriteLine(i.ToString());
        Console.WriteLine(f.ToString());
@@ -270,61 +270,42 @@ C# 提供了下列内置的类型转换方法：
 异常捕获可以避免代码报错造成程序卡死的情况
 
 ```c#
-public static void Main(string[] args)
-
-​    {
-
-​      Console.WriteLine("异常捕获");
-
-​      try
-
-​      {
-
-​        string str = Console.ReadLine();
-
-​        int i = int.Parse(str);
-
-​        Console.WriteLine(i);
-
-​        Console.Read();
-
-​        //希望进行异常捕获的代码块
-
-​        //放到try中
-
-​        //如果try中的代码报错了不会让程序卡死
-
-​      } 
-
-​      catch (Exception e)
-
-​      {
-
-​        Console.WriteLine(e);
-
-​        Console.WriteLine("请输入合法数字");
-
-​        Console.Read();
-
-​        //e就是try里面的具体问题，可以使用e去打印问题
-
-​        //如果出错了会执行catch中的代码来捕获异常
-
-​        throw;
-
-​      }
-
-​      //可选部分
-
-​      finally
-
-​      {
-
-​        Console.WriteLine("执行完毕");
-
-​      }
-
-​      //注意异常捕获代码基本结构不需要加分号，语句块需要加分号
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			Console.WriteLine("异常捕获");
+			try
+			{
+				string str = Console.ReadLine();
+				int i = int.Parse(str);
+				Console.WriteLine(i);
+				Console.Read();
+				//希望进行异常捕获的代码块
+				//放到try中
+				//如果try中的代码报错了不会让程序卡死
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
+				Console.WriteLine("请输入合法数字");
+				Console.Read();
+				//e就是try里面的具体问题，可以使用e去打印问题
+				//如果出错了会执行catch中的代码来捕获异常
+				throw;
+			}
+			//可选部分
+			finally
+			{
+				Console.WriteLine("执行完毕");
+			}
+			//注意异常捕获代码基本结构不需要加分号，语句块需要加分号
+		}
+	}
+}
 ```
 
 
@@ -411,7 +392,7 @@ public static void Main(string[] args)
 
   1.位与& 同1为1
 
-  ```
+  ```c#
   int a = 1;		//001
   int b = 5;		//101
   int c = a & b ;	//001
@@ -449,7 +430,7 @@ public static void Main(string[] args)
 
 - switch
 
-  ```
+  ```c#
   switch()
   {
   	case 常量:
@@ -4380,9 +4361,194 @@ namespace Test
 }
 ```
 
-#### （4）Lamada表达式
+#### （4）lambda表达式
+
+可以将lambda表达式理解为匿名函数的简写，它除了写法不同外，使用上和匿名函数一模一样，都是和委托或者事件配合使用的。
+
+```c#
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//声明匿名函数 delegate(参数列表)
+			//{
+			//	
+			//}
+			Action a1 = delegate()
+			{
+				Console.WriteLine("无参无返回匿名函数");
+			};
+			a1();
+			//lambda函数
+			//(参数列表)=>
+			//{
+			//	
+			//}
+			//无参无返回值
+			Action a2 = ()=>{Console.WriteLine("无参无返回匿名函数");};
+			a2();
+			//含参无返回值
+			Action<int> a3 = (int value)=>{Console.WriteLine("含参无返回匿名函数{0}",value);};
+			a3(520);
+			//当含有参数时，lambda的参数类型可以省略
+			Action<int> a4 = (value)=>{Console.WriteLine("含参无返回匿名函数{0}",value);};//没写int
+			a4(100);
+			//无参有返回值
+			Func<string> f1 = ()=>{return "我爱你";};
+			Console.WriteLine("无参有返回匿名函数{0}",f1());
+			//含参有返回值
+			Func<string,string> f2 = (string name)=>{return name;};
+			Console.WriteLine("无参有返回匿名函数{0}",f2("张三"));
+		 }
+	}
+}
+```
+
+#### （5）闭包
+
+```c#
+using System;
+namespace Test
+{
+	class Test
+	{
+		//闭包
+		//内层的函数可以引用包含在它外层的函数的变量
+		//即使外层函数的执行已经终止
+		//注意：该变量提供的值并非变量创建时的值，而是在父函数范围内最终值
+		public Action action;
+		public Test()
+		{
+			int value = 10;//原来是构造函数执行完销毁
+			action = ()=>{Console.WriteLine(value);};//相当于用action存了value的值，改变了原有的生命周期，行成了闭包
+			for(int i=9;i>0;i--)
+			{
+				action += ()=>
+				{
+					//注意：该变量提供的值并非变量创建时的值，而是在父函数范围内最终值
+					Console.WriteLine(i);//并非987654321 ，而是i的最终值0
+				};
+			}
+			for(int i=9;i>0;i--)
+			{
+				int index = i;//每次创建的index都是一个新值
+				action += ()=>
+				{
+					Console.WriteLine(index);//987654321
+				};
+			}
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			Test t = new Test();
+			t.action();
+		 }
+	}
+}
+```
 
 ### 5.List排序
+
+```c#
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+namespace Test
+{
+	class Item : IComparable<Item>//自定义类的排序,继承了泛型接口用来排序
+	{
+		public int money;
+		public Item(int money)
+		{
+			this.money = money;
+		}
+		public int CompareTo(Item other)
+		{
+			//返回值的含义
+			if(this.money > other.money)
+			{
+				return 1;//放到传入值的右边
+			}
+			else if(this.money < other.money)
+			{
+				return -1;//放到传入值的左边
+			}
+			else
+			{
+				return 0;//不动
+			}
+		}
+	}
+	class ShopItem//通过委托函数进行排序
+	{
+		public int id;
+		public ShopItem(int id)
+		{
+			this.id = id;
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//系统自带的排序
+			List<int> list = new List<int>();
+			list.Add(4);
+			list.Add(3);
+			list.Add(2);
+			list.Add(6);
+			list.Add(5);
+			list.Add(1);
+			for (int i = 0; i < list.Count; i++)
+			{
+				Console.WriteLine(list[i]);
+			}
+			list.Sort();
+			Console.WriteLine("-------------");
+			for (int i = 0; i < list.Count; i++)
+			{
+				Console.WriteLine(list[i]);
+			}
+			//自定义类的排序 继承了泛型接口用来排序
+			List<Item> itemList = new List<Item>();
+			itemList.Add(new Item(100));
+			itemList.Add(new Item(30));
+			itemList.Add(new Item(10));
+			itemList.Add(new Item(60));
+			itemList.Add(new Item(200));
+			itemList.Add(new Item(40));
+			itemList.Sort();
+			Console.WriteLine("-------------");
+			for (int i = 0; i < itemList.Count; i++)
+			{
+				Console.WriteLine(itemList[i].money);
+			}
+			//通过委托函数进行排序
+			List<ShopItem> shopItem = new List<ShopItem>();
+			shopItem.Add(new ShopItem(1004));
+			shopItem.Add(new ShopItem(1030));
+			shopItem.Add(new ShopItem(1001));
+			shopItem.Add(new ShopItem(1028));
+			shopItem.Add(new ShopItem(1025));
+			shopItem.Add(new ShopItem(1024));
+			shopItem.Sort((a,b)=>{return a.id>b.id?1:-1;});
+			Console.WriteLine("-------------");
+			for (int i = 0; i < shopItem.Count; i++)
+			{
+				Console.WriteLine(shopItem[i].id);
+			}
+		}
+	}
+}
+```
+
+> 系统自带的类型可以直接Sort,对于自定义类可以使用接口或者委托实现想要的排序。
 
 ### 8.协变逆变
 
