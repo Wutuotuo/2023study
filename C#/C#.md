@@ -4687,7 +4687,229 @@ namespace Test
 
 ### 8.预处理器指令
 
+编译器：将源语言程序翻译为目标语言程序
+
+预处理指令 都是以`#`开始
+
+预处理指令不是语句所以不以`;`结束
+
+```c#
+//#define
+//定义一个符号 类似没有值的常量
+#define Unity2014
+#define Unity2022
+#define IOS
+//#undef
+//取消define定义的符号
+#undef Unity2014
+
+using System;
+namespace Test
+{
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//#if
+			//#elif
+			//#else
+			//#endif
+			//和if语句一样，一般配合define定义的符号使用，用于高速编译器进行编译代码的流程控制
+			
+			//如果有Unity4符号，那么会执行语句块中的指令
+			#if Unity2014
+			Console.WriteLine("预处理器指令Unity2014");
+			#elif Uniyt2017
+			Console.WriteLine("预处理器指令Unity2017");
+			#else
+			Console.WriteLine("预处理器指令既不是Unity2014也不是Unity2017");
+			#endif
+			
+			#if Unity2022&&IOS
+			Console.WriteLine("预处理器指令Unity2022 && IOS");
+			#endif
+			
+			#if Android
+			#warning 这个版本不合法
+			#error 发生错误
+			#endif
+			Console.ReadKey();
+		}
+	}
+}
+```
+
 ###  9.反射和特性
+
+- 反射
+
+  程序集：程序集就是我们写的一个代码集合 ， 我们现在写的所有代码，最终都会被编译器翻译为一个程序集供别人使用，比如一个代码库文件 (dll) 或者一个可执行文件 （exe）。程序集是经由编译器编译得到的 ，供进一步编译执行的那个中间产物，在Windows系统中 ， 它一般表现为后缀为 .dll (库文件) 或者是.exe(可执行文件)的格式
+
+  元数据：同来描述数据的数据，程序的类 ， 类的函数 、 变量等等信息就是程序的元数据，有关程序以及类型的数据被称为元数据 ， 它们保存在程序集中
+
+  反射的概念：程序正在运行时 ， 可以查看其它程序集或者自身的元数据 。一个运行的程序查看本身或者其它程序的元数据的行为就叫做反射。在程序运行时 ， 通过反射可以得到其它程序集或者自己程序集代码的各种信息，比如类 ， 函数 ， 变量 ， 对象等等 ， 实例化它们 ， 执行它们 ， 操作它们。
+
+  反射的作用：因为反射可以在程序编译后获得信息 ， 所以它提高了程序的拓展性和灵活性
+
+  1 ． 程序运行时得到所有元数据 ， 包括元数据的特性
+
+  2 ． 程序运行时 ， 实例化对象 ， 操作对象
+
+  3 ． 程序运行时创建新对象 ， 用这些对象执行任务
+
+  ```c#
+  using System;
+  using System.Reflection;
+  namespace Test
+  {
+  	class Test
+  	{
+  		private int i = 1;
+  		public int j = 0;
+  		public string S = "hello";
+  		public Test()
+  		{
+  			
+  		}
+  		public Test(int i)
+  		{
+  			this.i = i;
+  		}
+  		public Test(int i,string s):this(i)
+  		{
+  			this.S = s;
+  		}
+  		public void Speak()
+  		{
+  			Console.WriteLine(i);
+  		}
+  		public int GetI()
+  		{
+  			return i;
+  		}
+  	}
+  	class Program
+  	{
+  		public static void Main(string[] args)
+  		{
+  			//Type 是类的信息类，是反射功能的基础
+  			//是访问元数据的主要方式
+  			//使用Type的成员获取有关类型声明的信息
+  			//有关类型的成员（如构造函数，方法，字段，属性，类的事件）
+  			
+  			
+  			//1.获取Type
+  			Console.WriteLine("--1.获取Type--");
+  			//1.1.object中的GetType()
+  			int a = 1;
+  			Type type1 = a.GetType();
+  			Console.WriteLine(type1);
+  			//1.2.typeof关键字 (常用来得到同一程序集的访问)
+  			Type type2 = typeof(string);
+  			Console.WriteLine(type2);
+  			//1.3.通过类名得到类型 （必须包含类的命名空间）（常用来得到不同程序集的访问）
+  			Type type3 = Type.GetType("System.Double");
+  			Console.WriteLine(type3);
+  			//每一个类只有一份信息，如果type1,type2,type3都指向同一类型，那么指向的地址是相同的
+  			
+  			
+  			//2.得到类的程序集信息
+  			Console.WriteLine("--2.得到类的程序集信息--");
+  			Console.WriteLine(type1.Assembly);
+  			Console.WriteLine(type2.Assembly);
+  			Console.WriteLine(type3.Assembly);
+  			//通过 Type 可以得到类型所在程序集信息
+  			
+  			
+  			//3.获取类中的所有公共成员
+  			Console.WriteLine("--3.获取类中的所有公共成员--");
+  			Type t = typeof(Test);
+  			//需要引用命名空间using System.Reflection;
+  			MemberInfo[] infos = t.GetMembers();
+  			foreach (MemberInfo element in infos)
+  			{
+  				Console.WriteLine(element);
+  			}
+  			
+  			
+  			//4.获取类的构造函数并调用
+  			Console.WriteLine("--4.获取类的构造函数并调用--");
+  			ConstructorInfo[] ctors = t.GetConstructors();
+  			foreach (ConstructorInfo element in ctors)
+  			{
+  				Console.WriteLine(element);
+  			}
+  			//获取其中一个构造函数并执行
+  			//得构造函数传入 Type 数组数组中内容按顺序是参数类型
+  			//执行构造函数传入 object 数组表示按顺序传入的参数
+  			//4.1.得到无参构造
+  			ConstructorInfo info1 = t.GetConstructor(new Type[0]);
+  			Test t1 = info1.Invoke(null) as Test;//执行无参构造，没有参数传空
+  			Console.WriteLine("t1.j = "+t1.j);
+  			//4.2.得到含参构造
+  			ConstructorInfo info2 = t.GetConstructor(new Type[]{typeof(int)});//Type数组typeof传参数类型
+  			Test t2 = info2.Invoke(new object[] {100} )as Test;//object数组传参数值
+  			Console.WriteLine("t2.i = "+t2.GetI());
+  			ConstructorInfo info3 = t.GetConstructor(new Type[]{typeof(int),typeof(string)});//Type数组typeof传参数类型
+  			Test t3 = info3.Invoke(new object[] {2023,"你好"} )as Test;//object数组传参数值
+  			Console.WriteLine("t3.i = {0},t3.S = {1}",t3.GetI(),t3.S);
+  			
+  			
+  			//5.获取类的公共成员变量
+  			Console.WriteLine("--5.获取类的公共成员变量--");
+  			FieldInfo[] fildInfo = t.GetFields();
+  			foreach (FieldInfo element in fildInfo)
+  			{
+  				Console.WriteLine(element);
+  			}
+  			//得到指定名称的成员变量
+  			FieldInfo infoj = t.GetField("j");
+  			FieldInfo infoS = t.GetField("S");
+  			//通过反射获取和设置对象的值
+  			Test t4 = new Test(520,"我爱你");
+  			//5.1通过反射获得对象某个值
+  			Console.WriteLine("t4.j = {0},t4.S = {1}",infoj.GetValue(t4),infoS.GetValue(t4));
+  			//5.2通过反射设置对象某个值
+  			infoj.SetValue(t4,5820);
+  			infoS.SetValue(t4,"我不爱你");
+  			Console.WriteLine("t4.j = {0},t4.S = {1}",infoj.GetValue(t4),infoS.GetValue(t4));
+  			
+  			
+  			//6.获取类的成员方法
+  			Console.WriteLine("--6.获取类的公共成员变量--");
+  			//通过Type的GetMethod()方法得到类中的方法
+  			//MethodInfo是方法的反射信息
+  			Type typestr = typeof(string);
+  			//1 ． 如果存在方法重载用Type数组表示参数类型
+  			MethodInfo[] methodInfo = typestr.GetMethods();
+  			foreach (MethodInfo element in methodInfo)
+  			{
+  				Console.WriteLine(element);
+  			}
+  			MethodInfo subStr = typestr.GetMethod("Substring",new Type[] {typeof(int),typeof(int)});
+  			//2 ． 调用该方法
+  			string str = "我爱你我不爱你";
+  			//第一个参数是对象（静态数组不需要声明对象因此为null
+  			object result = subStr.Invoke(str,new object[] {0,3});//object数组传参 表示起始位0截取3个参数
+  			Console.WriteLine(result);
+  			//注意 ： 如果是静态方法 Invoke中的第一个参数传null即可
+  			
+  			
+  			//其他
+  			//得枚举
+  			//得事件
+  			//得接口
+  			//得属性
+  			//等等
+  			Console.ReadKey();
+  		}
+  	}
+  }
+  ```
+
+  
+
+- 特性
 
 ### 10.迭代器
 
