@@ -155,9 +155,6 @@ C# 允许定义其他值类型的变量，比如 **enum**，也允许定义引�
   string g = "\\\\server\\share\\file.txt";   // \\server\share\file.txt
   string h = @"\\server\share\file.txt";      // \\server\share\file.txt
   string i = "one\r\ntwo\r\nthree";
-  string j = @"one
-  two
-  three";
   ```
 
 ---
@@ -241,6 +238,8 @@ C# 提供了下列内置的类型转换方法：
  **实例**
 
 ```c#
+using System;
+using System.Collections;
 namespace TypeConversionApplication
  {
    class StringConversion
@@ -257,13 +256,10 @@ namespace TypeConversionApplication
        Console.WriteLine(d.ToString());
        Console.WriteLine(b.ToString());
        Console.ReadKey();
-       
      }
    }
  }
 ```
-
-
 
 ### 10.异常捕获
 
@@ -303,6 +299,7 @@ namespace Test
 				Console.WriteLine("执行完毕");
 			}
 			//注意异常捕获代码基本结构不需要加分号，语句块需要加分号
+            Console.ReadKey();
 		}
 	}
 }
@@ -765,7 +762,7 @@ namespace System
 
 ### 1.复杂数据类型
 
-#### （1）.枚举
+#### （1）枚举
 
 枚举是一组命名整型常量。枚举类型是使用 **enum** 关键字声明的。
 
@@ -789,7 +786,7 @@ enum <enum_name>
 enum Days { Sun, Mon, tue, Wed, thu, Fri, Sat };
 ```
 
-#### （2）.数组
+#### （2）数组
 
 数组是一个存储相同类型元素的固定大小的顺序集合。数组是用来存储数据的集合，通常认为数组是一个同一类型变量的集合。
 
@@ -867,7 +864,7 @@ int[][] scores = new int[2][]{new int[]{92,93,94},new int[]{85,66,87,88}};//初�
 //其中，scores 是一个由两个整型数组组成的数组 -- scores[0] 是一个带有 3 个整数的数组，scores[1] 是一个带有 4 个整数的数组。
 ```
 
-#### （3）.结构体
+#### （3）结构体
 
 在 C# 中，结构体是值类型数据结构。它使得一个单一变量可以存储各种数据类型的相关数据。**struct** 关键字用于创建结构体。
 
@@ -1313,7 +1310,7 @@ public class testStructure
 
   类的定义:一般是声明在namespace中，是以关键字 **class** 开始，后跟类的名称。类的主体，包含在一对花括号内。下面是类定义的一般形式：
 
-  ```
+  ```c#
   <access specifier> class  class_name
   {
       // member variables //成员变量
@@ -1460,12 +1457,12 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
   {
       string name;
       int age;
-      public void Person()
+      public Person()
       {
           name = "张三";
           age = 18;
       }
-  	public void Person(string name,int _age) //重载
+  	public Person(string name,int _age) //重载
       {
           this.name = name;//this函数里面表示对象自己
           this.age = _age;
@@ -1482,15 +1479,15 @@ Person p3 = new Person();	//分配空间，栈指向堆（引用类型）
   {
       string name;
       int age;
-      public void Person()this("张三")//在无参构造函数时也可以添加常量进入含参构造函数
+      public Person()this("张三")//在无参构造函数时也可以添加常量进入含参构造函数
       {
           age = 18;
       }
-      public void Person(string _name)
+      public Person(string _name)
       {
           this.name = _name;
       }
-  	public void Person(string _name,int _age) this(name)//this即该类的构造函数 先this再执行这个构造函数
+  	public Person(string _name,int _age) this(name)//this即该类的构造函数 先this再执行这个构造函数
       {
           this.age = _age;
       }
@@ -2765,7 +2762,7 @@ class Program
 
 ### 5.面对对象相关知识点补充
 
-#### （1）.命名空间
+#### （1）命名空间
 
 命名空间是用来组织和重用代码的
 
@@ -2875,7 +2872,7 @@ class Program
   }
   ```
 
-#### （2）.关于修饰类的访问修饰符
+#### （2）关于修饰类的访问修饰符
 
   命名空间中的类默认为internal
 
@@ -2889,7 +2886,7 @@ class Program
 
   partial 分部类
 
-#### （3）.万物之父中的方法
+#### （3）万物之父中的方法
 
 - object中的静态方法
 
@@ -3039,7 +3036,7 @@ class Program
 
   该方法非常常用 。 当我们调用打印方法时 ， 默认使用的就是对象的 Tostring 方法后打印出来的内容 。
 
-#### （4）.字符串String
+#### （4）字符串String
 
 - 字符串指定位置获取
 
@@ -3123,7 +3120,7 @@ class Program
   }
   ```
 
-#### （5）.Stringbuilder
+#### （5）Stringbuilder
 
 string是特殊的引用类型，每次赋值或者拼接都会分配新的内存空间，如果一个字符串经常改变那么非常浪费空间
 
@@ -3207,7 +3204,7 @@ namespace Test
 
 
 
-#### （6）.结构体和类的区别
+#### （6）结构体和类的区别
 
 存储上：结构体和类最大的区别是在存储空间上的 ， 因为结构体是值 ， 类是引用 ，
 
@@ -3247,7 +3244,7 @@ namespace Test
 >
 > 从值类型和引用类型赋值时的区别上去考虑 ， 比如经常被赋值传递的对象 ， 并且改变赋值对象 ， 原对象不想跟着变化时 ， 就用结构体 。 比如坐标 、 向量 、 旋转等等
 
-#### （7）.抽象类和接口的区别
+#### （7）抽象类和接口的区别
 
 相同点
 
@@ -3287,6 +3284,22 @@ namespace Test
 
 ### 7.Uml类图
 
+在UML的静态机制中类图是一个重点，它不但是设计人员关心的核心，更是实现人员关注的核心。建模工具也主要根据类图来产生代码。
+
+类的命名尽量应用领域中的术语，应明确、无岐义，以利于相互交流和理解。类的属性、操作中的可见性使用+、#、－分别表示public、protected、private。
+
+建立类图的步骤：
+
+（1）研究分析问题领域确定系统需求。
+
+（2）确定类，明确类的含义和职责、确定属性和操作。
+
+（3）确定类之间的关系。
+
+![](../image/Snipaste_2023-05-11_18-51-19.png)
+
+不要试图在项目的初始阶段使用所有的符号，首先应该从简单概念开始。比如类的关系等等，在需要的时候才使用。在项目的不同开发阶段，应该使用不同的观点来画类图。如果处于分析阶段应该画概念层类图，当开始着手软件设计时，应该画说明层类图，当针对某个特定的技术实现时应该画实现层类图。不要为每个事物都画一个模型，应该把精力放在关键的领域。使用类图的最大危险是过早的陷入实现的细节，为了避免这个问题，应该将重点放在概念层和说明层。
+
 ### 8.七大原则
 
 # C#进阶
@@ -3295,7 +3308,7 @@ namespace Test
 
 ### 1.简单数据结构类
 
-#### （1）.动态数组Arraylist
+#### （1）动态数组Arraylist
 
 Arraylist是C#封装好的类，本质是一个**object类型的数组**，可以使用该类提供的方法进行增删改查。
 
@@ -3353,7 +3366,7 @@ namespace Test
 }
 ```
 
-#### （2）.栈Stack
+#### （2）栈Stack
 
 Stack是C#封装好的类，它的本质也是object [ ] 数组 ， 只是封装了特殊的存储规则，stack 是栈存储容器 ， 栈是一种先进后出的数据结构
 
@@ -3412,7 +3425,7 @@ namespace Test
 }
 ```
 
-#### （3）.队列Queue
+#### （3）队列Queue
 
 Stack是C#封装好的类,它的本质也是object[]数组 ， 只是封装了特殊的存储规则，Queue 是队列存储容器，队列是一种先进先出的数据结构
 
@@ -3471,7 +3484,7 @@ namespace Test
 }
 ```
 
-#### （4）.哈希表Hashtable
+#### （4）哈希表Hashtable
 
 Hashtable （ 又称散列表 ） 是基于键的哈希代码组织起来的 键 / 值 对，它的主要作用是高数据查询的效率
 
@@ -4607,19 +4620,19 @@ namespace Test
 
 ### 7.多线程
 
-#### （1）.进程
+#### （1）进程
 
 进程 (process) 是计算机中的程序关于某数据集合上的一次运行活动，是系统进行资源分配和调度的基本单位 ， 是操作系统结构的基础
 
 也可以理解为：打开一个应用程序就是在操作系统上开启了一个进程，进程之间既可以相互独立运行 ， 互不干扰，进程之间也可以相互访问 、 操作
 
-#### （2）.线程
+#### （2）线程
 
 操作系统能够进行运算调度的最小单位，它被包含在进程之中 ， 是进程中的实际运作单位，一条线程指的是进程中一个单一顺序的控制流 ， 一个进程中可以并发多个线程，我们目前写的程序都在主线程中
 
 也可以以理解为：就是代码从上到下运行的一条 “ 管道 ”
 
-#### （2）.多线程
+#### （3）多线程
 
 通过代码开启新的线程，同时运行代码的多条管道，叫做多线程
 
@@ -4741,213 +4754,722 @@ namespace Test
 
 ###  9.反射和特性
 
-- 反射
+#### （1）反射
 
-  程序集：程序集就是我们写的一个代码集合 ， 我们现在写的所有代码，最终都会被编译器翻译为一个程序集供别人使用，比如一个代码库文件 (dll) 或者一个可执行文件 （exe）。程序集是经由编译器编译得到的 ，供进一步编译执行的那个中间产物，在Windows系统中 ， 它一般表现为后缀为 .dll (库文件) 或者是.exe(可执行文件)的格式
+程序集：程序集就是我们写的一个代码集合 ， 我们现在写的所有代码，最终都会被编译器翻译为一个程序集供别人使用，比如一个代码库文件 (dll) 或者一个可执行文件 （exe）。程序集是经由编译器编译得到的 ，供进一步编译执行的那个中间产物，在Windows系统中 ， 它一般表现为后缀为 .dll (库文件) 或者是.exe(可执行文件)的格式
 
-  元数据：同来描述数据的数据，程序的类 ， 类的函数 、 变量等等信息就是程序的元数据，有关程序以及类型的数据被称为元数据 ， 它们保存在程序集中
+元数据：同来描述数据的数据，程序的类 ， 类的函数 、 变量等等信息就是程序的元数据，有关程序以及类型的数据被称为元数据 ， 它们保存在程序集中
 
-  反射的概念：程序正在运行时 ， 可以查看其它程序集或者自身的元数据 。一个运行的程序查看本身或者其它程序的元数据的行为就叫做反射。在程序运行时 ， 通过反射可以得到其它程序集或者自己程序集代码的各种信息，比如类 ， 函数 ， 变量 ， 对象等等 ， 实例化它们 ， 执行它们 ， 操作它们。
+反射的概念：程序正在运行时 ， 可以查看其它程序集或者自身的元数据 。一个运行的程序查看本身或者其它程序的元数据的行为就叫做反射。在程序运行时 ， 通过反射可以得到其它程序集或者自己程序集代码的各种信息，比如类 ， 函数 ， 变量 ， 对象等等 ， 实例化它们 ， 执行它们 ， 操作它们。
 
-  反射的作用：因为反射可以在程序编译后获得信息 ， 所以它提高了程序的拓展性和灵活性
+反射的作用：因为反射可以在程序编译后获得信息 ， 所以它提高了程序的拓展性和灵活性
 
-  1 ． 程序运行时得到所有元数据 ， 包括元数据的特性
+1 ． 程序运行时得到所有元数据 ， 包括元数据的特性
 
-  2 ． 程序运行时 ， 实例化对象 ， 操作对象
+2 ． 程序运行时 ， 实例化对象 ， 操作对象
 
-  3 ． 程序运行时创建新对象 ， 用这些对象执行任务
+3 ． 程序运行时创建新对象 ， 用这些对象执行任务
 
-  ```c#
-  using System;
-  using System.Reflection;
-  namespace Test
-  {
-  	class Test
-  	{
-  		private int i = 1;
-  		public int j = 0;
-  		public string S = "hello";
-  		public Test()
-  		{
-  			
-  		}
-  		public Test(int i)
-  		{
-  			this.i = i;
-  		}
-  		public Test(int i,string s):this(i)
-  		{
-  			this.S = s;
-  		}
-  		public void Speak()
-  		{
-  			Console.WriteLine(i);
-  		}
-  		public int GetI()
-  		{
-  			return i;
-  		}
-  	}
-  	class Program
-  	{
-  		public static void Main(string[] args)
-  		{
-  			//Type 是类的信息类，是反射功能的基础
-  			//是访问元数据的主要方式
-  			//使用Type的成员获取有关类型声明的信息
-  			//有关类型的成员（如构造函数，方法，字段，属性，类的事件）
-  			
-  			
-  			//1.获取Type
-  			Console.WriteLine("--1.获取Type--");
-  			//1.1.object中的GetType()
-  			int a = 1;
-  			Type type1 = a.GetType();
-  			Console.WriteLine(type1);
-  			//1.2.typeof关键字 (常用来得到同一程序集的访问)
-  			Type type2 = typeof(string);
-  			Console.WriteLine(type2);
-  			//1.3.通过类名得到类型 （必须包含类的命名空间）（常用来得到不同程序集的访问）
-  			Type type3 = Type.GetType("System.Double");
-  			Console.WriteLine(type3);
-  			//每一个类只有一份信息，如果type1,type2,type3都指向同一类型，那么指向的地址是相同的
-  			
-  			
-  			//2.得到类的程序集信息
-  			Console.WriteLine("--2.得到类的程序集信息--");
-  			Console.WriteLine(type1.Assembly);
-  			Console.WriteLine(type2.Assembly);
-  			Console.WriteLine(type3.Assembly);
-  			//通过 Type 可以得到类型所在程序集信息
-  			
-  			
-  			//3.获取类中的所有公共成员
-  			Console.WriteLine("--3.获取类中的所有公共成员--");
-  			Type t = typeof(Test);
-  			//需要引用命名空间using System.Reflection;
-  			MemberInfo[] infos = t.GetMembers();
-  			foreach (MemberInfo element in infos)
-  			{
-  				Console.WriteLine(element);
-  			}
-  			
-  			
-  			//4.获取类的构造函数并调用
-  			Console.WriteLine("--4.获取类的构造函数并调用--");
-  			ConstructorInfo[] ctors = t.GetConstructors();
-  			foreach (ConstructorInfo element in ctors)
-  			{
-  				Console.WriteLine(element);
-  			}
-  			//获取其中一个构造函数并执行
-  			//得构造函数传入 Type 数组数组中内容按顺序是参数类型
-  			//执行构造函数传入 object 数组表示按顺序传入的参数
-  			//4.1.得到无参构造
-  			ConstructorInfo info1 = t.GetConstructor(new Type[0]);
-  			Test t1 = info1.Invoke(null) as Test;//执行无参构造，没有参数传空
-  			Console.WriteLine("t1.j = "+t1.j);
-  			//4.2.得到含参构造
-  			ConstructorInfo info2 = t.GetConstructor(new Type[]{typeof(int)});//Type数组typeof传参数类型
-  			Test t2 = info2.Invoke(new object[] {100} )as Test;//object数组传参数值
-  			Console.WriteLine("t2.i = "+t2.GetI());
-  			ConstructorInfo info3 = t.GetConstructor(new Type[]{typeof(int),typeof(string)});//Type数组typeof传参数类型
-  			Test t3 = info3.Invoke(new object[] {2023,"你好"} )as Test;//object数组传参数值
-  			Console.WriteLine("t3.i = {0},t3.S = {1}",t3.GetI(),t3.S);
-  			
-  			
-  			//5.获取类的公共成员变量
-  			Console.WriteLine("--5.获取类的公共成员变量--");
-  			FieldInfo[] fildInfo = t.GetFields();
-  			foreach (FieldInfo element in fildInfo)
-  			{
-  				Console.WriteLine(element);
-  			}
-  			//得到指定名称的成员变量
-  			FieldInfo infoj = t.GetField("j");
-  			FieldInfo infoS = t.GetField("S");
-  			//通过反射获取和设置对象的值
-  			Test t4 = new Test(520,"我爱你");
-  			//5.1通过反射获得对象某个值
-  			Console.WriteLine("t4.j = {0},t4.S = {1}",infoj.GetValue(t4),infoS.GetValue(t4));
-  			//5.2通过反射设置对象某个值
-  			infoj.SetValue(t4,5820);
-  			infoS.SetValue(t4,"我不爱你");
-  			Console.WriteLine("t4.j = {0},t4.S = {1}",infoj.GetValue(t4),infoS.GetValue(t4));
-  			
-  			
-  			//6.获取类的成员方法
-  			Console.WriteLine("--6.获取类的公共成员变量--");
-  			//通过Type的GetMethod()方法得到类中的方法
-  			//MethodInfo是方法的反射信息
-  			Type typestr = typeof(string);
-  			//1 ． 如果存在方法重载用Type数组表示参数类型
-  			MethodInfo[] methodInfo = typestr.GetMethods();
-  			foreach (MethodInfo element in methodInfo)
-  			{
-  				Console.WriteLine(element);
-  			}
-  			MethodInfo subStr = typestr.GetMethod("Substring",new Type[] {typeof(int),typeof(int)});
-  			//2 ． 调用该方法
-  			string str = "我爱你我不爱你";
-  			//第一个参数是对象（静态数组不需要声明对象因此为null
-  			object result = subStr.Invoke(str,new object[] {0,3});//object数组传参 表示起始位0截取3个参数
-  			Console.WriteLine(result);
-  			//注意 ： 如果是静态方法 Invoke中的第一个参数传null即可
-  			
-  			
-  			//其他
-  			//得枚举
-  			//得事件
-  			//得接口
-  			//得属性
-  			//等等
-  			Console.ReadKey();
-  		}
-  	}
-  }
-  ```
+- 反射的使用
 
-  
+```c#
+using System;
+using System.Reflection;
+namespace Test
+{
+	class Test
+	{
+		private int i = 1;
+		public int j = 0;
+		public string S = "hello";
+		public Test()
+		{
+			
+		}
+		public Test(int i)
+		{
+			this.i = i;
+		}
+		public Test(int i,string s):this(i)
+		{
+			this.S = s;
+		}
+		public void Speak()
+		{
+			Console.WriteLine(i);
+		}
+		public int GetI()
+		{
+			return i;
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//Type 是类的信息类，是反射功能的基础
+			//是访问元数据的主要方式
+			//使用Type的成员获取有关类型声明的信息
+			//有关类型的成员（如构造函数，方法，字段，属性，类的事件）
+			
+			
+			//1.获取Type
+			Console.WriteLine("--1.获取Type--");
+			//1.1.object中的GetType()
+			int a = 1;
+			Type type1 = a.GetType();
+			Console.WriteLine(type1);
+			//1.2.typeof关键字 (常用来得到同一程序集的访问)
+			Type type2 = typeof(string);
+			Console.WriteLine(type2);
+			//1.3.通过类名得到类型 （必须包含类的命名空间）（常用来得到不同程序集的访问）
+			Type type3 = Type.GetType("System.Double");
+			Console.WriteLine(type3);
+			//每一个类只有一份信息，如果type1,type2,type3都指向同一类型，那么指向的地址是相同的
+			
+			
+			//2.得到类的程序集信息
+			Console.WriteLine("--2.得到类的程序集信息--");
+			Console.WriteLine(type1.Assembly);
+			Console.WriteLine(type2.Assembly);
+			Console.WriteLine(type3.Assembly);
+			//通过 Type 可以得到类型所在程序集信息
+			
+			
+			//3.获取类中的所有公共成员
+			Console.WriteLine("--3.获取类中的所有公共成员--");
+			Type t = typeof(Test);
+			//需要引用命名空间using System.Reflection;
+			MemberInfo[] infos = t.GetMembers();
+			foreach (MemberInfo element in infos)
+			{
+				Console.WriteLine(element);
+			}
+			
+			
+			//4.获取类的构造函数并调用
+			Console.WriteLine("--4.获取类的构造函数并调用--");
+			ConstructorInfo[] ctors = t.GetConstructors();
+			foreach (ConstructorInfo element in ctors)
+			{
+				Console.WriteLine(element);
+			}
+			//获取其中一个构造函数并执行
+			//得构造函数传入 Type 数组数组中内容按顺序是参数类型
+			//执行构造函数传入 object 数组表示按顺序传入的参数
+			//4.1.得到无参构造
+			ConstructorInfo info1 = t.GetConstructor(new Type[0]);
+			Test t1 = info1.Invoke(null) as Test;//执行无参构造，没有参数传空
+			Console.WriteLine("t1.j = "+t1.j);
+			//4.2.得到含参构造
+			ConstructorInfo info2 = t.GetConstructor(new Type[]{typeof(int)});//Type数组typeof传参数类型
+			Test t2 = info2.Invoke(new object[] {100} )as Test;//object数组传参数值
+			Console.WriteLine("t2.i = "+t2.GetI());
+			ConstructorInfo info3 = t.GetConstructor(new Type[]{typeof(int),typeof(string)});//Type数组typeof传参数类型
+			Test t3 = info3.Invoke(new object[] {2023,"你好"} )as Test;//object数组传参数值
+			Console.WriteLine("t3.i = {0},t3.S = {1}",t3.GetI(),t3.S);
+			
+			
+			//5.获取类的公共成员变量
+			Console.WriteLine("--5.获取类的公共成员变量--");
+			FieldInfo[] fildInfo = t.GetFields();
+			foreach (FieldInfo element in fildInfo)
+			{
+				Console.WriteLine(element);
+			}
+			//得到指定名称的成员变量
+			FieldInfo infoj = t.GetField("j");
+			FieldInfo infoS = t.GetField("S");
+			//通过反射获取和设置对象的值
+			Test t4 = new Test(520,"我爱你");
+			//5.1通过反射获得对象某个值
+			Console.WriteLine("t4.j = {0},t4.S = {1}",infoj.GetValue(t4),infoS.GetValue(t4));
+			//5.2通过反射设置对象某个值
+			infoj.SetValue(t4,5820);
+			infoS.SetValue(t4,"我不爱你");
+			Console.WriteLine("t4.j = {0},t4.S = {1}",infoj.GetValue(t4),infoS.GetValue(t4));
+			
+			
+			//6.获取类的成员方法
+			Console.WriteLine("--6.获取类的公共成员变量--");
+			//通过Type的GetMethod()方法得到类中的方法
+			//MethodInfo是方法的反射信息
+			Type typestr = typeof(string);
+			//1 ． 如果存在方法重载用Type数组表示参数类型
+			MethodInfo[] methodInfo = typestr.GetMethods();
+			foreach (MethodInfo element in methodInfo)
+			{
+				Console.WriteLine(element);
+			}
+			MethodInfo subStr = typestr.GetMethod("Substring",new Type[] {typeof(int),typeof(int)});
+			//2 ． 调用该方法
+			string str = "我爱你我不爱你";
+			//第一个参数是对象（静态数组不需要声明对象因此为null
+			object result = subStr.Invoke(str,new object[] {0,3});//object数组传参 表示起始位0截取3个参数
+			Console.WriteLine(result);
+			//注意 ： 如果是静态方法 Invoke中的第一个参数传null即可
+			
+			
+			//其他
+			//得枚举
+			//得事件
+			//得接口
+			//得属性
+			//等等
+			Console.ReadKey();
+		}
+	}
+}
+```
 
-- 特性
+- DLL（类库）的创建
+
+![](../image/Snipaste_2023-05-09_15-51-55.png)
+
+类库在生成时会出现DLL文件，且类库无法运行
+
+```c#
+using System;
+using System.Threading;
+namespace test
+{
+	public class RandomNumber//每一个对象都有一个随机数
+	{
+		public int i;
+		public RandomNumber()
+		{
+			Random a = new Random();
+			i = a.Next();
+		}
+		public void PrintNum()
+		{
+			while (true) 
+			{
+				Random a = new Random();
+				Console.WriteLine(a.Next());
+				Thread.Sleep(2000);
+			}
+		}
+	}
+	public class nulltest
+	{
+		public int i;
+	}
+}
+```
+
+- Activator（快速实例化）和Assembly（加载其他DLL类库）配合反射的使用
+
+```c#
+using System;
+using System.Reflection;//需要引用命名空间
+using System.Threading;
+namespace Test
+{
+	class Test
+	{
+		private int i = 1;
+		public int j = 0;
+		public string S = "hello";
+		public Test()
+		{
+			
+		}
+		public Test(int i)
+		{
+			this.i = i;
+		}
+		public Test(int i,string s):this(i)
+		{
+			this.S = s;
+		}
+		public void Speak()
+		{
+			Console.WriteLine(i);
+		}
+		public int GetI()
+		{
+			return i;
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//1.Activator
+			Console.WriteLine("--Activator快速实例化--");
+			//用于快速实例化对象类
+			//用于将 Type 对象快捷实例化为对象
+			//先得到 Type
+			//然后快速实例化一个对象
+			//1.1无参构造
+			Type testType = typeof(Test);
+			Test test1 = Activator.CreateInstance(testType) as Test;//快速实例化类型
+			Console.WriteLine("test1.i={0}\ttest1.S={1}",test1.GetI(),test1.S);
+			//1.2含参构造（参数必须对应构造函数中的参数）
+			Test test2= Activator.CreateInstance(testType,5820) as Test;//快速实例化类型
+			Test test3 = Activator.CreateInstance(testType,520,"我爱你") as Test;//快速实例化类型
+			Console.WriteLine("test2.i={0}\ttest2.S={1}",test2.GetI(),test2.S);
+			Console.WriteLine("test3.i={0}\ttest3.S={1}",test3.GetI(),test3.S);
+			
+			
+			
+			//2.Assembly
+			Console.WriteLine("--Assembly--");
+			//主要用来加载其他程序集，加载后
+			//才能用Type来使用其他程序集中的信息
+			//如果想要使用不是自己程序集中的内容需要先加载程序集
+			//比如dll类库
+			//简单的把库文件看成一种代码仓库 ， 它提供给使用者一些可以直接拿来用的变量 、 函数或类
+			//三种加载程序集的函数
+			//一般用来加载在同一文件下的其它程序集
+			//Assembly assembly1 = Assembly.Load("程序集名称");
+			//一般用来加载不在同一文件下的其它程序集
+			//Assembly assembly2 = Assembly.LoadFrom("包含程序集清单的文件的名称或路径");
+			//Assembly assembly3 = Assembly.LoadFile("要加载的文件的完全限定路径");
+			//路径单斜杠变双斜杠，或者引号前加@可以取消转义字符
+			//Type[] types = assembly1.GetTypes();
+			
+			
+			Thread thread = new Thread(NewThreadLogic);
+			thread.Start();
+			thread.IsBackground = true;
+			Console.ReadKey();
+		}
+		public static void NewThreadLogic()
+		{
+			//解决方案下创建Rand类库
+			Assembly assembly = Assembly.LoadFrom(@"D:\360MoveData\Users\13038\Documents\SharpDevelop Projects\test\Rand\bin\Debug\Rand.dll");
+			Type[] type = assembly.GetTypes();//得到所有类
+			Console.WriteLine("--得到Rand.dll所有类--");
+			for (int i = 0; i < type.Length; i++)
+			{
+				Console.WriteLine(type[i]);
+			}
+			//实例化一个对象
+			Type rand = assembly.GetType("test.RandomNumber");
+			MemberInfo[] memberInfo = rand.GetMembers();//得到类中所有公共成员
+			Console.WriteLine("--得到RandomNumber所有公共成员--");
+			for (int i = 0; i < memberInfo.Length; i++)
+			{
+				Console.WriteLine(memberInfo[i]);
+			}
+			object randomnumber = Activator.CreateInstance(rand);//快速实例化
+			MethodInfo printNum = rand.GetMethod("PrintNum");
+			Console.WriteLine("--使用PrintNum方法每两秒生成一个随机数--");
+			printNum.Invoke(randomnumber,null);
+		}
+	}
+}
+```
+
+#### （2）特性
+
+**特性（Attribute）**是用于在运行时传递程序中各种元素（比如类、方法、结构、枚举、组件等）的行为信息的声明性标签。您可以通过使用特性向程序添加声明性信息。一个声明性标签是通过放置在它所应用的元素前面的方括号（[ ]）来描述的。
+
+特性（Attribute）用于添加元数据，如编译器指令和注释、描述、方法、类等其他信息。.Net 框架提供了两种类型的特性：*预定义*特性和*自定义*特性。
+
+特性本质是个类，我们可以利用特性类为元数据添加额外信息，比如一个类 、 成员变量 、 成员方法等等为他们添加更多的额外信息，之后可以通过反射来获取这些额外信息。
+
+```c#
+#define Fun
+using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;//调用者信息特性需要此命名空间
+namespace Test
+{
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Field | AttributeTargets.Method,AllowMultiple = true,Inherited=true)]//是逻辑或，该内容在3.定义特性的参数中
+	//1.声明一个自定义特性
+	class myCustomAttribute:Attribute//需要继承类Attribute
+	{
+		public string info;
+		//特性中的成员，一般根据需求去写
+		public myCustomAttribute(string info)
+		{
+			this.info = info;
+		}
+		public void TestFun()
+		{
+			Console.WriteLine("myCustomAttribute中的方法");
+		}
+	}
+	
+	
+	//2.特性的添加
+	//语法 [特性名（参数列表）]
+	[myCustom("MyClass是一个用于计算的类")]//系统自动省略名字中的Attribute
+	[myCustom("MyClass是一个用于计算的类？")]//[myCustomAttribute]中的参数AllowMultiple = true允许多加
+	class MyClass
+	{
+		[myCustom("value是序号")]
+		public int value;
+		[myCustom("Method是一个用于计算加法的函数")]
+		public void Method(int a)
+		{
+			this.value = a;
+		}
+		//public void Method([myCustom("这个数是被加的参数")]int a)//AttributeTargets特性限制只能用于类，变量，函数，无法用于参数
+		//{
+		//    this.value = a;
+		//}
+	}
+	
+	
+	//3.定义特性的参数
+	//参数一 ： AttributeTargets _ 特性嫩个用在哪些地方
+	//参数二 ： AllowMultiple 一是否允许多个特性实例用在同一个目标上
+	//参数三 ： Inherited 一特性是否能被派生类和重写成员继承
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,AllowMultiple = true,Inherited=true)]//是逻辑或
+	//为特性类加特性限制其使用范围
+	class myCustom2Attribute:Attribute//需要继承类Attribute
+	{
+		public string info;
+		//特性中的成员，一般根据需求去写
+		public myCustom2Attribute(string info)
+		{
+			this.info = info;
+		}
+		public void TestFun()
+		{
+			Console.WriteLine("myCustom2Attribute中的方法");
+		}
+	}
+	
+	
+	//5.系统自带特性-过时特性
+	//用于提示用户，使用的方法成员等已经过时，建议使用新方法
+	//关键字Obsolete
+	class Test
+	{
+		//参数一 调用方法时提示的内容
+		//参数二 true编译时如果使用该方法会报错，false编译时发出警告
+		[Obsolete("OldSpeak方法已经过时了，请使用新方法Speak",false)]
+		public void OldSpeakWaring()
+		{
+		}
+		[Obsolete("OldSpeak方法已经过时了，请使用新方法Speak",true)]
+		public void OldSpeakError()
+		{
+		}
+		public void Speak()
+		{
+		}
+		//6.系统自带特性-调用者信息特性 （编译器问题无法运行）
+		//需要引用命名空间 using System.Runtime.CompilerServices;
+//		public void WhoCall(string str,[CallerFilePath]string fieldName = "",[CallerLineNumber]int line = 0,[CallerMemberName]string target = "")
+//		{
+//			Console.WriteLine("源文件地址: "+fieldName);
+//			Console.WriteLine("方法使用所在行号: "+line);
+//			Console.WriteLine("方法名称: "+target);
+//		}
+	}
+	
+	
+	//7.系统自带特性-条件编译特性
+	//Conditional
+	//它会和预处理指令 #define 配合使用
+	//需要引用命名空间 using System.Diagnostics;
+	//主要可以用在一些调试代码上
+	//有时想执行有时不想执行的代码
+	//#define 函数名
+	//函数前面加 [Conditional("函数名")]
+	
+	
+	//系统自带特性-外部Dll包函数特性
+	// DllImport
+	//用来标记非.Net（C#）的函数，表明该函数在一个外部的DLL中定义
+	//一般用来调用C或者C++的Dll包写好的方法
+	//需要引用命名空间 using System.Runtime.InteropServices;
+	//语法
+	//[DllImport("函数名或者路径")]
+	//public static extern int Add(int a,int b);//与DLL包中一模一样的方法，相当于把包中的方法映射到了C#中。
+	
+	
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//4.特性的使用
+			MyClass mc = new MyClass();
+			Type t = mc.GetType();
+			//Type t = Type.GetType("Test.MyClass");复习
+			//Type t  =typeof(MyClass);复习
+			//判断是否使用了某个特性
+			//参数一，特性的类型
+			//参数二，代表是否搜索继承链（比如该类继承了myCustomAttribute）属性事件忽略此参数
+			if(t.IsDefined(typeof(myCustomAttribute),false))//该方法只会检测类的特性
+			{
+				Console.WriteLine("该类应用了特性");
+				//获取所有特性
+				Object[] array =t.GetCustomAttributes(true);
+				for(int i = 0;i<array.Length;i++)
+				{
+					if( array[i] is myCustomAttribute)
+					{
+						Console.WriteLine((array[i] as myCustomAttribute).info);
+						(array[i] as myCustomAttribute).TestFun();//在得到类的时候，可以得到相关联类的方法
+					}
+				}
+			}
+			
+			//5
+			Test test = new Test();
+			test.OldSpeakWaring();//发出警告
+			//test.OldSpeakError();//产生错误
+			//7
+			Fun();
+			Console.ReadKey();
+		}
+		[Conditional("Fun")]//只有存在7.系统自带特性-条件编译特性#define定义的Fun才会执行
+		public static void Fun()
+		{
+			Console.WriteLine("Fun");
+		}
+	}
+
+}
+```
 
 ### 10.迭代器
 
+迭代器（iterator）有时又称光标（cursor）是程序设计的软件设计模式
+
+迭代器模式提供一个方法，顺序访问一个聚合对象中的各个元素，而又不暴露其内部的标识
+
+在表现效果上看    是可以在容器对象（例如链表或数组）上遍历访问的接口，设计人员无需关心容器对象的内存分配的实现细节，可以用foreach遍历的类，都是实现了迭代器的。
+
+#### （1）标准迭代器的实现方法
+
+```c#
+using System;
+using System.Collections;
+namespace Test
+{
+	//1.标准迭代器的实现方法
+	//继承接口IEnumerable，IEnumerator
+	//命名空间using System.Collections;
+	//可以通过同时集成IEnumerable，IEnumerator实现里面的方法
+	class Test:IEnumerable,IEnumerator
+	{
+		private int[] list;
+		//IEnumerator需要的成员变量：光标位置,需要的成员方法MoveNext,成员属性Current
+		private int position = -1;//用来表示迭代器到的位置
+		public Test()
+		{
+			list = new int[] {1,2,3,4,5};
+		}
+		public IEnumerator GetEnumerator()//继承IEnumerable接口方法
+		{
+			this.Reset();//每次开始遍历光标需要复原
+			return this;
+		}
+		public bool MoveNext()//继承IEnumerator接口方法
+		{
+			position++;
+			//判断是否溢出
+			return position<list.Length;
+		}
+		public object Current//继承IEnumerator接口方法
+		{
+			get
+			{
+				return list[position];
+			}
+		}
+		public void Reset()//继承IEnumerator接口方法
+		{
+			position = -1;
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//访问自定义类Test里面的数组
+			Test t = new Test();
+			//foreach本质就是获取in后面的GetEnumerator方法
+			foreach (int item in t)
+			{
+				Console.WriteLine(item);
+			}
+			foreach (int item in t)
+			{
+				Console.WriteLine(item);
+			}
+			Console.ReadKey();
+		}
+	}
+}
+```
+
+#### （2）语法糖yield return
+
+```c#
+using System;
+using System.Collections;
+namespace Test
+{
+	//2.yield return 是C#提供给我们的语法糖
+	//所谓语法糖，也称糖衣语法
+	//主要作用就是将复杂逻辑简单化，可以增加程序的可读性，从而减少程序代码出错的机会
+	//关键接口：IEnumerable
+	//命名空间：using System.Collections;
+	//让想要通过foreach遍历的自定义类实现接口中的方法GetEnumerator即可
+	class Test:IEnumerable
+	{
+		private int[] list;
+		public Test()
+		{
+			list = new int[] {1,2,3,4,5};
+		}
+		public IEnumerator GetEnumerator()//继承IEnumerable接口方法
+		{
+			for(int i = 0 ; i<list.Length;i++)
+			{
+				//yield关键字 配合迭代器使用
+				//可以理解为 暂时返回 保留当前的状态
+				//一会儿还会再回来
+				//C#的语法糖编译器在编译时补全如(1)中的代码，增加程序的可读性，从而减少程序代码出错的机会
+				yield return list[i];
+			}
+		}
+	}
+	class Program
+	{
+		public static void Main(string[] args)
+		{
+			//访问自定义类Test里面的数组
+			Test t = new Test();
+			//foreach本质就是获取in后面的GetEnumerator方法
+			foreach (int item in t)
+			{
+				Console.WriteLine(item);
+			}
+			foreach (int item in t)
+			{
+				Console.WriteLine(item);
+			}
+			Console.ReadKey();
+		}
+	}
+}
+```
+
 ### 11. 特殊语法
+
+#### （1）var隐式类型
+
+var 是一种特殊的变量类型，它可以用来表示任意类型的变量
+注意 ：
+
+1 .  var 不能作为类的成员只能用于临时变量申明时,也就是一般写在函数语句块中
+
+2 .  var 必须初始化
+
+#### （2）设置对象初始值
+
+声明对象时，可以直接写大括号的形式初始化成员变量以及属性
+
+```c#
+Person p = new Person{name = "张三",age = 18,height = 180};//公共的
+```
+
+#### （3）设置集合初始值
+
+声明集合时，可以直接写大括号的形式初始化内部属性
+
+```c#
+int[] array = {1,2,3,4};
+List<int> list = new List(){1,2,3,4};
+```
+
+#### （4）匿名类型
+
+```c#
+var p = new{name = "张三",age = 18,height = 180};//相当于临时定义的类
+```
+
+#### （5）可空类型
+
+正常来说，值类型是不能赋值为空的，但声明时，在值类型后面加?可以复制为空
+
+```c#
+int? i = null;
+//在使用时，为安全性应该判断是否为空
+if(i.HasValue)
+{
+    Console.WriteLine(i);
+    Console.WriteLine(i.value);
+}
+//安全获取
+Console.WriteLine(i.GetValueOrDefault());//为空打印默认值
+Console.WriteLine(i.GetValueOrDefault(100));//为空打印设定值，并不是赋值
+object o = null;
+o?.ToString();//如果不为空才执行
+```
+
+#### （6）空合并操作符
+
+空合并操作符`??`，左边值 `??` 右边值
+如果左边值为 null 就返回右边值否则返回左边值，注意是可以为 null 的类型才能用
+
+```c#
+int? v =null;
+int i = v ?? 100;
+```
+
+#### （7）内插字符串
+
+关键符号$
+
+用$来构造字符串，让字符串中可以拼接变量
+
+```
+string name = "张三";
+int age = 18;
+Console.WriteLine($"姓名{name}年龄{age}");
+```
+
+#### （8）单句逻辑简略写法
+
+```c#
+if(true)Console.WriteLine("你好");
+for(int i = 0 ; i < 10 ; i++)Console.WriteLine("你好");
+while(true)Console.WriteLine("你好");
+//不写大括号时只执行一句
+```
+
+### 11.值类型和引用类型2
+
+- 结构体：
+
+结构体本身是值类型（前提：该结构体没有作为其他类的成员）
+
+在结构体中的值，栈中存储值具体的内容
+
+在结构体中的引用，堆内存存储引用具体的内容
+
+- 类中的值类型：
+
+类本身是引用类型
+
+在类中的值，堆中存储具体的值
+
+在类中的引用，堆中存储具体的值，引用类型一直在堆里
 
 ### 12.排序进阶
 
-## 二、实践项目
-
-### 1.需求分析
-
-### 2.复用修改贪吃蛇部分代码
-
-### 3.绘制对象基类和类型枚举
-
-### 4.地图类不变墙壁和动态墙壁相关
-
-### 5.方块变形信息类
-
-### 6.方块管理者类初始化方块
-
-### 7.方块变形
-
-### 8.方块左右移动
-
-### 9.方块自动向下移动
-
-### 10.输入线程
-
-### 11.消方块
-
-### 12.结束流程
-
-### 13.优化线程
-
 ---
 
-参考文献
+学习过程中参考了以下内容，诚挚感谢知识的分享者！
 
- [ 微软 | Microft docs.访问修饰符(C# 编程指南)](https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/public) 
+ [ 微软 | Microft docs(C# 编程指南)](https://learn.microsoft.com/zh-cn/dotnet/csharp/) 
+
+ [ 菜鸟教程 | C# 教程](https://www.runoob.com/csharp/csharp-tutorial.html) 
+
+ [ 唐老狮 | C#四部曲](https://space.bilibili.com/79983517)
+
+ [ Suzkfly | C#随机数](https://www.cnblogs.com/Suzkfly/p/15860783.html)
+
+
 
