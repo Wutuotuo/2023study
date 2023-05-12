@@ -5459,6 +5459,67 @@ while(true)Console.WriteLine("你好");
 
 ### 12.排序进阶
 
+#### （1）插入排序
+
+插入排序的工作方式像许多人排序一手扑克牌。开始时，我们的左手为空并且桌子上的牌面向下。然后，我们每次从桌子上拿走一张牌并将它插入左手中正确的位置。为了找到一张牌的正确位置，我们从右到左将它与已在手中的每张牌进行比较，放在合适的位置。这样拿在左手上的牌总是排序好的。
+
+```c#
+using System;
+using System.Threading;
+ 
+namespace Sort
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            
+            int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
+            Console.WriteLine("排序前的数组：");
+            foreach (int item in arr)
+            {
+                Console.Write(item + ",");
+            }
+            Console.WriteLine();
+            InsertSort(arr);
+            Console.WriteLine("排序后的数组：");
+            foreach (int item in arr)
+            {
+                Console.Write(item+",");
+            }
+            Console.WriteLine();
+            Console.ReadKey();
+        }
+        static void InsertSort(int[] arr)
+        {
+        	
+            for (int index = 1; index < arr.Length; index++)
+            {
+            	int tmp = arr[index];
+            	for(int j = index;j > 0 ; j-- )
+            	{
+            		if(tmp < arr[j-1])
+            		{
+            			arr[j] = arr[j-1];
+            			arr[j-1] = tmp;
+            		}
+            	}
+            }
+        }
+    }
+}
+```
+
+
+
+#### （2）希尔排序
+
+#### （3）归并排序
+
+#### （4）快速排序
+
+#### （5）堆排序
+
 ---
 
 学习过程中参考了以下内容，诚挚感谢知识的分享者！
