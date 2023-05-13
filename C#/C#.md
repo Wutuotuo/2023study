@@ -5495,15 +5495,20 @@ namespace Sort
         	
             for (int index = 1; index < arr.Length; index++)
             {
+                //得到未排序区第一位元素
             	int tmp = arr[index];
+                //得到排序区最后一位的游标j-1
             	for(int j = index;j > 0 ; j-- )
             	{
-            		if(tmp < arr[j-1])
+            		if(tmp < arr[j-1])//如果未排序区第一位小于排序区最后一位
             		{
             			arr[j] = arr[j-1];
-            			arr[j-1] = tmp;
+            			arr[j-1] = tmp;//两者位置互换
             		}
+                    //j--之后，tmp与排序区倒数第二位比较
+                    //当比较晚arr[1-1]，也就是第一个元素后，j=0退出内循环
             	}
+                //index+1 ,继续比较直至比较到最后一个元素
             }
         }
     }
@@ -5514,11 +5519,222 @@ namespace Sort
 
 #### （2）希尔排序
 
+希尔排序是插入排序的升级版，将整个待排序队列，分割成若干子队列，分别进行插入排序
+
+```c#
+using System;
+using System.Threading;
+namespace Sort
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            
+            int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
+            Console.WriteLine("排序前的数组：");
+            foreach (int item in arr)
+            {
+                Console.Write(item + ",");
+            }
+            Console.WriteLine();
+            ShellSort(arr);
+            Console.WriteLine("排序后的数组：");
+            foreach (int item in arr)
+            {
+                Console.Write(item+",");
+            }
+            Console.WriteLine();
+            Console.ReadKey();
+            
+        }
+        static void ShellSort(int[] arr)
+        {
+        	for (int step = arr.Length / 2; step > 0; step = step / 2)//步数为当前长度的一半,当步数为1执行完毕时结束
+        	{
+        		for (int index = step; index < arr.Length; index++) //下标为当前的步数，每次循环下标加一，直至下标到最后一个时结束
+        		{
+        			int sIndex = index;//更小的下标 的值为下标
+                    int tmp = arr[index];//得到未排序区的第一个元素
+                    while (sIndex - step >= 0 && tmp < arr[sIndex - step])
+                    {
+                    	arr[sIndex] = arr[sIndex - step];//如果当前元素小于减步长元素 那么大的挪后面
+                        sIndex = sIndex - step;//继续比较下一个减去步长的元素
+                        //直到当更小的下标 - 步长小于零时（溢出）或当未排序区第一个元素已经大于被比较元素时
+                    }
+                    arr[sIndex] = tmp;//小的挪前面
+                    //index++开始比较下一个数
+        		}
+        		//step变为原来的一半,最后一次当 1/2 = 0时退出循环
+        	}
+        }
+    }
+}
+```
+
+
+
 #### （3）归并排序
+
+将两个的有序数列合并成一个有序数列，我们称之为"**归并**"。
+ 归并排序(Merge Sort)就是利用归并思想对数列进行排序。根据具体的实现，归并排序包括"**从上往下**"和"**从下往上**"2种方式。
+
+
+ \1. **从下往上的归并排序**：将待排序的数列分成若干个长度为1的子数列，然后将这些数列两两合并；得到若干个长度为2的有序数列，再将这些数列两两合并；得到若干个长度为4的有序数列，再将它们两两合并；直接合并成一个数列为止。这样就得到了我们想要的排序结果。(参考下面的图片)
+
+\2. **从上往下的归并排序**：它与"从下往上"在排序上是反方向的。它基本包括3步：
+ ① 分解 -- 将当前区间一分为二，即求分裂点 mid = (low + high)/2;
+ ② 求解 -- 递归地对两个子区间a[low...mid] 和 a[mid+1...high]进行归并排序。递归的终结条件是子区间长度为1。
+ ③ 合并 -- 将已排序的两个子区间a[low...mid]和 a[mid+1...high]归并为一个有序的区间a[low...high]。
+
+
+
+下面的图片很清晰的反映了"从下往上"和"从上往下"的归并排序的区别。
+
+![](../image/Snipaste_2023-05-13_20-52-35.png)
+
+```c#
+using System;
+using System.Threading;
+namespace Sort
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            
+            int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
+            Console.WriteLine("排序前的数组：");
+            foreach (int item in arr)
+            {
+                Console.Write(item + ",");
+            }
+            Console.WriteLine();
+            int[] newarr = Merge(arr);
+            Console.WriteLine("排序后的数组：");
+            foreach (int item in newarr)
+            {
+                Console.Write(item+",");
+            }
+            Console.WriteLine();
+            Console.ReadKey();
+            
+        }
+        static int[] Merge(int[] arr)//分割
+        {
+        	if(arr.Length<2)//递归的终止条件，当数组长度小于2时不再分割
+        		return arr;
+        	int mid = arr.Length/2;//数组分两段,得到一个中间索引
+        	int[] left = new int[mid];//左数组
+        	int[] right = new int[arr.Length-mid];//右数组
+        	for(int i = 0 ; i < arr.Length ; i++)//初始化左右数组
+        	{
+        		if(i < mid )
+        			left[i] = arr[i];
+        		else 
+        			right[i-mid] = arr[i];
+        	}
+        	return Sort(Merge(left),Merge(right));//递归
+        }
+        static int[] Sort(int[] left,int[] right)//比较
+        {
+        	int[] array = new int[left.Length+right.Length];
+        	int leftIndex = 0;//左数组索引
+        	int rightIndex = 0;//右数组索引
+        	for(int i = 0;i<left.Length+right.Length;i++)
+        	{
+        		if(leftIndex >= left.Length)//当左数组索引超过左数组长度时，把右数组填进去
+        		{
+        			array[i] = right[rightIndex];
+        			rightIndex++;
+        		}
+        		else if(rightIndex >= right.Length)//当右数组索引超过右数组长度时，把左数组填进去
+        		{
+        			array[i] = left[leftIndex];
+        			leftIndex++;
+        		}
+        		else if(left[leftIndex] < right[rightIndex])//当没有以上情况且 左数组索引对应值小于右数组索引对应值时
+        		{
+        			array[i] = left[leftIndex];//把左数组填进去
+        			leftIndex++;//左数组索引+1
+        		}
+        		else
+        		{
+        			array[i] = right[rightIndex];//把右数组填进去
+        			rightIndex++;//右数组索引+1
+        		}
+        	}
+        	return array;
+        }
+    }
+}
+```
+
+
 
 #### （4）快速排序
 
+在一段数组中找到一个基准值，一个指针先从后往前寻找小于该值的数，找到后放到基准值的位置，另一个指针从前往后寻找大于该值的数，找到后放到刚才小于该值的位置。以此类推，当两个指针相遇时，相遇时的位置就是基准值的位置。这样就会造成 `小的数组` `基准值` `大的数组`三段，然后继续对数组进行操作，直到每个分段只剩一个元素，即完成排序。
+
+```c#
+using System;
+using System.Threading;
+namespace Sort
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
+			Console.WriteLine("排序前的数组：");
+			foreach (int item in arr)
+			{
+				Console.Write(item + ",");
+			}
+			Console.WriteLine();
+			Quicksort(arr,0,arr.Length-1);
+			Console.WriteLine("排序后的数组：");
+			foreach (int item in arr)
+			{
+				Console.Write(item+",");
+			}
+			Console.WriteLine();
+			Console.ReadKey();
+		}
+		static void Quicksort(int[] array,int begin ,int end)
+		{
+			if (begin >= end) return; //数组只有一个元素时退出
+			int index = array[begin];// 基准值 选取当前数组第一个值
+			int i = begin;// 低位i从左向右扫描
+			int j = end;// 高位j从右向左扫描
+			while (i < j)
+			{
+				while(array[j]>=index && i < j )//从右到左寻找小于index的值
+				{
+					j--;
+				}
+				if(array[j]<index)
+				array[i] = array[j];//找到后替换
+				while(array[i]<=index && i < j )//从左到右寻找大于index的值
+				{
+					i++;
+				}
+				if(array[i]>index)
+				array[j] = array[i];//找到后替换
+			}
+			array[i] = index;//i(或j)所指向的既是基准位置
+			Quicksort(array,begin,i-1);//递归执行前段
+			Quicksort(array,i+1,end);//递归执行后段
+		}
+	}
+}
+```
+
+
+
 #### （5）堆排序
+
+
 
 ---
 
