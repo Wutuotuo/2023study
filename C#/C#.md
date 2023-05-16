@@ -1053,7 +1053,7 @@ public class testStructure
 
   错误使用ref:
 
-  ```
+  ```c#
   class Program
       {
           static void Main(string[] args)
@@ -1076,7 +1076,7 @@ public class testStructure
 
   正确使用out：
 
-  ```
+  ```c#
   class Program
   {
       static void Main(string[] args)
@@ -1098,7 +1098,7 @@ public class testStructure
 
   错误使用out:
 
-  ```
+  ```c#
   class Program
   {
       static void Main(string[] args)
@@ -5465,15 +5465,12 @@ while(true)Console.WriteLine("你好");
 
 ```c#
 using System;
-using System.Threading;
- 
 namespace Sort
 {
     class Program
     {
         static void Main(string[] args)
         {
-            
             int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
             Console.WriteLine("排序前的数组：");
             foreach (int item in arr)
@@ -5523,14 +5520,12 @@ namespace Sort
 
 ```c#
 using System;
-using System.Threading;
 namespace Sort
 {
     class Program
     {
         static void Main(string[] args)
         {
-            
             int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
             Console.WriteLine("排序前的数组：");
             foreach (int item in arr)
@@ -5595,7 +5590,6 @@ namespace Sort
 
 ```c#
 using System;
-using System.Threading;
 namespace Sort
 {
     class Program
@@ -5678,7 +5672,6 @@ namespace Sort
 
 ```c#
 using System;
-using System.Threading;
 namespace Sort
 {
 	class Program
@@ -5734,6 +5727,99 @@ namespace Sort
 
 #### （5）堆排序
 
+堆是一个近似完全二叉树的结构，并同时满足**堆积的性质**：即子结点的键值或索引总是小于（或者大于）它的父节点。
+
+每个结点的值都大于或等于其左右孩子结点的值，称为大顶堆
+
+每个结点的值都小于或等于其左右孩子结点的值，称为小顶堆
+
+> 完全二叉树：一棵深度为k的有n个结点的二叉树，对树中的结点按从上至下、从左到右的顺序进行编号，如果编号为i（1≤i≤n）的结点与满二叉树中编号为i的结点在二叉树中的位置相同，则这棵二叉树称为完全二叉树。
+>
+> 满二叉树：除最后一层无任何子节点外，每一层上的所有结点都有两个子结点的二叉树。
+
+在堆的数据结构中，堆中的最大值总是位于根节点（在优先队列中使用堆的话堆中的最小值位于根节点）。堆中定义以下几种操作：
+
+- 最大堆调整（Max Heapify）：将堆的末端子节点作调整，使得子节点永远小于父节点(大顶堆)
+- 创建最大堆（Build Max Heap）：将堆中的所有数据重新排序
+- 堆排序（HeapSort）：移除位在第一个数据的根节点，并做最大堆调整的递归运算
+
+![](../image/Snipaste_2023-05-16_18-30-57.png)
+
+```c#
+using System;
+namespace Sort
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			int[] arr = {23, 44, 66, 76, 98, 11, 3, 9, 7};
+			Console.WriteLine("排序前的数组：");
+			foreach (int item in arr)
+			{
+				Console.Write(item + ",");
+			}
+			Console.WriteLine();
+			HeapSort(arr,arr.Length-1);
+			Console.WriteLine("排序后的数组：");
+			foreach (int item in arr)
+			{
+				Console.Write(item+",");
+			}
+			Console.WriteLine();
+			Console.ReadKey();
+			
+		}
+		/// <summary>
+		/// 最大堆调整
+		/// </summary>
+		/// <param name="array">存储堆的数组</param>
+		/// <param name="n">数组最大下标</param>
+		/// <param name="i">待维护节点的下标</param>
+		static void MaxHeapify(int[] array,int n ,int i)
+		{
+			int largest = i;//默认最大值下标
+			int lson = i*2+1;//左孩子下标
+			int rson = i*2+2;//右孩子下标
+			if(lson <= n && array[largest]<array[lson])
+			{
+				largest = lson;
+			}
+			if(rson <= n && array[largest]<array[rson])//和父节点，左孩子中的最大值比较
+			{
+				largest = rson;
+			}
+			if(largest != i)
+			{
+				Swap(ref array[largest],ref array[i]);
+				MaxHeapify(array,n,largest);//递归调用 让新最大值所在节点满足两个子节点小于该节点
+			}
+		}
+		static void HeapSort(int[] array,int n)
+		{
+			//创建最大堆
+			for(int i=n/2-1;i>=0;i--)
+			{
+				MaxHeapify(array,n,i);
+			}
+			//堆排序
+			for(int i=n;i>0;i--)
+			{
+				//每次将堆顶最大值移到数组最后，因此i之后为有序区
+				Swap(ref array[i],ref array[0]);
+				MaxHeapify(array,i-1,0);
+			}
+		}
+		static void Swap(ref int a,ref int b)
+		{
+			int temp = b;
+			b = a;
+			a = temp;
+		}
+	}
+}
+```
+
 
 
 ---
@@ -5748,5 +5834,5 @@ namespace Sort
 
  [ Suzkfly | C#随机数](https://www.cnblogs.com/Suzkfly/p/15860783.html)
 
-
+ [ 请叫我AXin |排序算法：堆排序【图解+代码】 ](https://www.bilibili.com/video/BV1fp4y1D7cj/?share_source=copy_web&vd_source=081706f5636c74e45189e6d00e62d722)
 
