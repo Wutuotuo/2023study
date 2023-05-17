@@ -17,14 +17,14 @@ public class UImanager : MonoBehaviour
         //恢复暂停的时间
         Time.timeScale = 1;
         //使用+=来注册
-        EventHandler.GetPointEvent+= OnGetPointEvent;//注册函数的参数必须和方法相同
+        EventHandler.GetPointEvent += OnGetPointEvent;//注册函数的参数必须和方法相同
         EventHandler.GameOverEvent += OnGameOverEvent;
     }
     //注销
     private void OnDisable()
     {
         //使用-=来注销
-        EventHandler.GetPointEvent-= OnGetPointEvent;//注销函数的参数必须和方法相同
+        EventHandler.GetPointEvent -= OnGetPointEvent;//注销函数的参数必须和方法相同
         EventHandler.GameOverEvent -= OnGameOverEvent;
     }
    

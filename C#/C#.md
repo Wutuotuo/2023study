@@ -4167,7 +4167,7 @@ namespace Test
             Func<string> func = null;//Func泛型无参数sting返回值委托
             func += Fun3;
             Console.WriteLine(func.Invoke());
-            Func<int,int> func2 = null;//Func泛型前面参数，后面返回值
+            Func<int,int> func2 = null;//Func泛型前面参数，最后一个返回值
             func2 += Fun2;
             func2.Invoke(16);
 		}
