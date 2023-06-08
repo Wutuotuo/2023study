@@ -2422,6 +2422,9 @@ class Program
   让继承同一父类的子类们，在执行相同方法时有不同表现
 
   ```c#
+  using System;
+  namespace Test
+  {
   class GameObject
   {
   	public virtual void Atk1()
@@ -2435,17 +2438,17 @@ class Program
   }
   class Player:GameObject
   {
-      public override void Akt1()
+      public override void Atk1()
       {
-          base.Atk1;//可以用base来执行父类中的方法
-          Console.WriteLine("Player")
+      	base.Atk1();//可以用base来执行父类中的方法
+          Console.WriteLine("Player");
       }
   }
   class Monster:GameObject
   {
       public new void Akt2()
       {
-          Console.WriteLine("Monster")
+          Console.WriteLine("Monster");
       }
   }
   class Program
@@ -2454,10 +2457,12 @@ class Program
       {
   		GameObject p = new Player();
           GameObject m = new Monster();
-          m.atk(); //执行了父类输出GameObjectAtk2 						不是期望的输出
-          (m as Monster).atk; //执行了子类输出Monster
-          p.atk(); //使用virtual和override：输出GameObjectAtk1 Player 	 是期望的输出
+          m.Atk2(); //执行了父类  
+          (m as Monster).Atk2();//输出GameObjectAtk2 GameObjectAtk2  		不是期望的输出
+          p.Atk1(); //使用virtual和override：
+          Console.ReadKey();//输出GameObjectAtk1 Player 	 是期望的输出
       }
+  }
   }
   ```
 
@@ -3480,7 +3485,7 @@ namespace Test
             //装箱拆箱
             int num = 0;
             queue.Enqueue(num);//装箱 栈内存到堆内存
-            queue.Dequeue();//拆箱 堆内存到栈内存
+            num = (int)queue.Dequeue();//拆箱 堆内存到栈内存
         }
 	}
 }
@@ -4856,6 +4861,7 @@ namespace Test
 			{
 				Console.WriteLine(element);
 			}
+            
 			//获取其中一个构造函数并执行
 			//得构造函数传入 Type 数组数组中内容按顺序是参数类型
 			//执行构造函数传入 object 数组表示按顺序传入的参数
@@ -5550,7 +5556,7 @@ namespace Sort
         	{
         		for (int index = step; index < arr.Length; index++) //下标为当前的步数，每次循环下标加一，直至下标到最后一个时结束
         		{
-        			int sIndex = index;//更小的下标 的值为下标
+        			int sIndex = index;//内层的下标 
                     int tmp = arr[index];//得到未排序区的第一个元素
                     while (sIndex - step >= 0 && tmp < arr[sIndex - step])
                     {
